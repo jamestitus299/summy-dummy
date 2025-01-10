@@ -1,6 +1,6 @@
 {
   "name": "react-code-runner-preview",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "React components for running and previewing code with live editing capabilities",
   "main": "dist/index.js",
@@ -11,16 +11,15 @@
   ],
   "scripts": {
     "build": "rollup -c",
-    "prepare": "npm run build",
-    "test": "jest",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "react-live-runner": "^1.0.0",
+    "recharts": "^2.15.0"
   },
   "peerDependencies": {
     "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "react-live-runner": "^1.0.0",
-    "recharts": "^2.15.0"
+    "react-dom": "^18.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.22.0",
@@ -31,13 +30,6 @@
     "@rollup/plugin-commonjs": "^25.0.0",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.0.0",
-    "@storybook/addon-essentials": "^8.4.7",
-    "@storybook/addon-interactions": "^8.4.7",
-    "@storybook/addon-onboarding": "^8.4.7",
-    "@storybook/blocks": "^8.4.7",
-    "@storybook/react": "^8.4.7",
-    "@storybook/react-vite": "^8.4.7",
-    "@storybook/test": "^8.4.7",
     "@types/react": "^18.0.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",

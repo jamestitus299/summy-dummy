@@ -8,14 +8,14 @@ interface ButtonWithMessageProps {
 const ButtonText: React.FC<ButtonWithMessageProps> = ({ initialMessage = "Click the button!" }) => {
   const [message, setMessage] = useState<string>(initialMessage);
 
-  // const handleClick = () => {
-  //   setMessage("Hello, you clicked the button!");
-  // };
+  const handleClick = () => {
+    setMessage("Hello, from JT");
+  };
   
   // const message = 'jam'
   return (
     <div>
-      {/* <button onClick={handleClick}>Click me</button> */}
+      <button onClick={handleClick}>Click me</button>
       <p>{message}</p>
     </div>
   );

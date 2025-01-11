@@ -2,6 +2,39 @@ import React, { useRef, useState, createElement, useEffect, Component, isValidEl
 import { AreaChart, BarChart, LineChart, ComposedChart, PieChart, RadarChart, RadialBarChart, ScatterChart, FunnelChart, Treemap, ResponsiveContainer, Legend, Tooltip, Cell, Text, Label, LabelList, Customized, Area, Bar, Line, Scatter, XAxis, YAxis, ZAxis, Brush, CartesianAxis, CartesianGrid, ReferenceLine, ReferenceDot, ReferenceArea, ErrorBar, Funnel, Cross, Curve, Dot, Polygon, Rectangle, Sector, Pie, Radar, RadialBar, PolarAngleAxis, PolarGrid, PolarRadiusAxis } from 'recharts';
 import { LiveProvider, LivePreview, LiveError, LiveEditor } from 'react-live-runner';
 
+/******************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+/* global Reflect, Promise, SuppressedError, Symbol, Iterator */
+
+
+var __assign = function() {
+    __assign = Object.assign || function __assign(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+
+typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+    var e = new Error(message);
+    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+};
+
 var ContextualKeyword; (function (ContextualKeyword) {
   const NONE = 0; ContextualKeyword[ContextualKeyword["NONE"] = NONE] = "NONE";
   const _abstract = NONE + 1; ContextualKeyword[ContextualKeyword["_abstract"] = _abstract] = "_abstract";
@@ -15013,39 +15046,6 @@ function getSucraseContext(code, options) {
 
 function u(){return u=Object.assign||function(e){for(var r=1;r<arguments.length;r++){var t=arguments[r];for(var o in t)Object.prototype.hasOwnProperty.call(t,o)&&(e[o]=t[o]);}return e},u.apply(this,arguments)}const p=e=>transform(e,{transforms:["jsx","typescript","imports"],production:!0}).code.substring(13),i=/^(\s*)(<[^>]*>|function[(\s]|\(\)[\s=]|class\s)(.*)/,d=["default","import"],a=(r,t)=>{const{import:o}=t,n=function(e,r){if(null==e)return {};var t,o,n={},s=Object.keys(e);for(o=0;o<s.length;o++)r.indexOf(t=s[o])>=0||(n[t]=e[t]);return n}(t,d),s=u({React:React,require:m(o)},n),c=Object.keys(s),l=c.map(e=>s[e]);return new Function(...c,r)(...l)},f=e=>{const{code:o,scope:n}=e;if(!o.trim())return null;const s={};a(p((e=>e.replace(i,"$1export default $2$3"))(o)),u({render:e=>{s.default=e;}},n,{exports:s}));const c=s.default;return c?isValidElement(c)?c:"function"==typeof c?createElement(c):"string"==typeof c?c:null:null},m=(e={})=>r=>{if(!e.hasOwnProperty(r))throw new Error(`Module not found: '${r}'`);return e[r]};class h extends Component{constructor(...e){super(...e),this.state={element:null,error:null,prevCode:null,prevScope:void 0};}static getDerivedStateFromProps(e,r){if(r.prevCode===e.code&&r.prevScope===e.scope)return null;try{return {element:f(e),error:null,prevCode:e.code,prevScope:e.scope}}catch(r){return {element:null,error:r,prevCode:e.code,prevScope:e.scope}}}static getDerivedStateFromError(e){return {error:e}}componentDidMount(){var e,r;null==(e=(r=this.props).onRendered)||e.call(r,this.state.error||void 0);}shouldComponentUpdate(e,r){return e.code!==this.props.code||e.scope!==this.props.scope||r.error!==this.state.error}componentDidUpdate(){var e,r;null==(e=(r=this.props).onRendered)||e.call(r,this.state.error||void 0);}render(){return this.state.error?null:this.state.element}}const y=({code:e,scope:r,disableCache:o})=>{const l=useRef(!0),u=useRef(null),[p,i]=useState(()=>{const n=createElement(h,{code:e,scope:r,onRendered:e=>{e?i({element:o?null:u.current,error:e.toString()}):u.current=n;}});return {element:n,error:null}});return useEffect(()=>{if(l.current)return void(l.current=!1);const n=createElement(h,{code:e,scope:r,onRendered:e=>{e?i({element:o?null:u.current,error:e.toString()}):u.current=n;}});i({element:n,error:null});},[e,r,o]),p};
 
-/******************************************************************************
-Copyright (c) Microsoft Corporation.
-
-Permission to use, copy, modify, and/or distribute this software for any
-purpose with or without fee is hereby granted.
-
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-PERFORMANCE OF THIS SOFTWARE.
-***************************************************************************** */
-/* global Reflect, Promise, SuppressedError, Symbol, Iterator */
-
-
-var __assign = function() {
-    __assign = Object.assign || function __assign(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
-
-typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
-    var e = new Error(message);
-    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
-};
-
 // react scope
 var reactScope = {
   React: React,
@@ -15110,41 +15110,50 @@ var scope = __assign(__assign({}, reactScope), rechartsScope);
 
 function CheckCodeRender(_a) {
   var code = _a.code,
-    returnError = _a.returnError;
+    returnError = _a.returnError,
+    scope$1 = _a.scope;
+  var finalScope = __assign(__assign({}, scope), scope$1);
   var _b = y({
       code: code,
-      scope: scope,
-      disableCache: true
+      scope: finalScope,
+      disableCache: false
     }),
     element = _b.element,
     error = _b.error;
+  // if (error) {
+  //   returnError(error);
+  // } else {
+  //   returnError(null);
+  // }
   useEffect(function () {
     returnError(error);
-  }, [element, error, returnError]);
+  }, []);
   return /*#__PURE__*/React.createElement("div", {
     style: {
-      display: 'none'
+      display: "none"
     }
   }, element);
 }
 
 function ReactCanvas(_a) {
   var code = _a.code,
+    scope$1 = _a.scope,
     _b = _a.showpreview,
     showpreview = _b === void 0 ? true : _b,
     _c = _a.showeditor,
     showeditor = _c === void 0 ? false : _c,
     _d = _a.showerror,
     showerror = _d === void 0 ? false : _d;
+  var finalScope = __assign(__assign({}, scope), scope$1);
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(LiveProvider, {
     code: code,
-    scope: scope
+    scope: finalScope
   }, showpreview && /*#__PURE__*/React.createElement(LivePreview, null), showerror && /*#__PURE__*/React.createElement(LiveError, null), showeditor && /*#__PURE__*/React.createElement(LiveEditor, null)));
 }
 
 var ButtonText = function (_a) {
   var _b = _a.initialMessage,
-    initialMessage = _b === void 0 ? "Click the button!" : _b;
+    initialMessage = _b === void 0 ? "" : _b;
   var _c = useState(initialMessage),
     message = _c[0],
     setMessage = _c[1];
@@ -15152,9 +15161,14 @@ var ButtonText = function (_a) {
     setMessage("Hello, from JT");
   };
   // const message = 'jam'
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("button", {
-    onClick: handleClick
-  }, "Click me"), /*#__PURE__*/React.createElement("p", null, message));
+  return /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col items-center justify-center space-y-4"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-xl text-gray-800"
+  }, message), /*#__PURE__*/React.createElement("button", {
+    onClick: handleClick,
+    className: "px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-300"
+  }, "Click me"));
 };
 
 export { CheckCodeRender, ButtonText as JamButton, ReactCanvas };

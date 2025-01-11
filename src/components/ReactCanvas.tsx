@@ -5,10 +5,11 @@ import {
   LiveError,
   LivePreview,
 } from 'react-live-runner';
-import { scope } from '../utils/Scope';
+import { scope as defaultscope} from '../utils/Scope';
 
 export interface ReactCanvasProps {
   code: string;
+  scope?: Record<string, React.ComponentType | unknown>;
   showpreview?: boolean;
   showeditor?: boolean;
   showerror?: boolean;
@@ -16,13 +17,15 @@ export interface ReactCanvasProps {
 
 export default function ReactCanvas({
   code,
+  scope,
   showpreview = true,
   showeditor = false,
   showerror = false,
 }: ReactCanvasProps) {
+  const finalScope = {...defaultscope, ...scope}
   return (
     <div>
-      <LiveProvider code={code} scope={scope}>
+      <LiveProvider code={code} scope={finalScope}>
         {showpreview && <LivePreview />}
         {showerror && <LiveError />}
         {showeditor && <LiveEditor />}

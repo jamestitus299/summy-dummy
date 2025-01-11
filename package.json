@@ -1,8 +1,8 @@
 {
-  "name": "react-code-runner-preview",
-  "version": "1.0.1",
+  "name": "react-code-canvas",
+  "version": "1.0.5",
   "type": "module",
-  "description": "React components for running and previewing code with live editing capabilities",
+  "description": "React component for running and previewing code with live editing capabilities",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
@@ -45,5 +45,13 @@
     "code-editor"
   ],
   "author": "James Titis",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jamestitus299/summy-dummy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jamestitus299/summy-dummy.git/issues"
+  },
+  "homepage": "https://github.com/jamestitus299/summy-dummy.git#readme"
 }

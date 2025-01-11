@@ -20,6 +20,20 @@ PERFORMANCE OF THIS SOFTWARE.
 ***************************************************************************** */
 /* global Reflect, Promise, SuppressedError, Symbol, Iterator */
 
+var extendStatics = function(d, b) {
+    extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+    return extendStatics(d, b);
+};
+
+function __extends$1(d, b) {
+    if (typeof b !== "function" && b !== null)
+        throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    extendStatics(d, b);
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+}
 
 var __assign = function() {
     __assign = Object.assign || function __assign(t) {
@@ -15110,32 +15124,50 @@ var rechartsScope = {
 // Export all the components and scope needed
 var scope = __assign(__assign({}, reactScope), rechartsScope);
 
-function CheckCodeRender(_a) {
-  var code = _a.code,
-    scope$1 = _a.scope,
-    returnError = _a.returnError;
-  var finalScope = __assign(__assign({}, scope), scope$1);
-  var _b = y({
+// import React, { useEffect } from "react";
+// import { useRunner } from "react-runner";
+// import { scope as defaultscope } from "../utils/Scope";
+var CheckCodeRender = /** @class */function (_super) {
+  __extends$1(CheckCodeRender, _super);
+  function CheckCodeRender(props) {
+    var _this = _super.call(this, props) || this;
+    // Run the `useRunner` hook manually using an external function
+    var _a = _this.runCode(),
+      element = _a.element,
+      error = _a.error;
+    _this.state = {
+      element: element,
+      error: error
+    };
+    return _this;
+  }
+  CheckCodeRender.prototype.runCode = function () {
+    var _a = this.props,
+      code = _a.code,
+      scope$1 = _a.scope;
+    var finalScope = __assign(__assign({}, scope), scope$1);
+    return y({
       code: code,
       disableCache: false,
       scope: finalScope
-    }),
-    element = _b.element,
-    error = _b.error;
-  // if (error) {
-  //   returnError(error);
-  // } else {
-  //   returnError(null);
-  // }
-  React.useEffect(function () {
+    });
+  };
+  CheckCodeRender.prototype.componentDidMount = function () {
+    var returnError = this.props.returnError;
+    var error = this.state.error;
+    // Return the error message when the component mounts
     returnError(error);
-  }, []);
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "none"
-    }
-  }, element);
-}
+  };
+  CheckCodeRender.prototype.render = function () {
+    var element = this.state.element;
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "none"
+      }
+    }, element);
+  };
+  return CheckCodeRender;
+}(React.Component);
 
 function ReactCanvas(_a) {
   var code = _a.code,
@@ -15173,7 +15205,7 @@ var ButtonText = function (_a) {
   }, "Click me"));
 };
 
-exports.CheckCodeRender = CheckCodeRender;
+exports.CheckReactCode = CheckCodeRender;
 exports.JamButton = ButtonText;
 exports.ReactCanvas = ReactCanvas;
 //# sourceMappingURL=index.js.map

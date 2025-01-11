@@ -4,4 +4,4 @@ export interface CheckCodeRenderProps {
     returnError: (error: string | null) => void;
     scope?: Record<string, React.ComponentType | unknown>;
 }
-export default function CheckCodeRender({ code, returnError, scope, }: CheckCodeRenderProps): React.JSX.Element;
+export default function CheckCodeRender({ code, scope, returnError, }: CheckCodeRenderProps): React.JSX.Element;

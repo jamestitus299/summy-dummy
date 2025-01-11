@@ -15112,13 +15112,13 @@ var scope = __assign(__assign({}, reactScope), rechartsScope);
 
 function CheckCodeRender(_a) {
   var code = _a.code,
-    returnError = _a.returnError,
-    scope$1 = _a.scope;
+    scope$1 = _a.scope,
+    returnError = _a.returnError;
   var finalScope = __assign(__assign({}, scope), scope$1);
   var _b = y({
       code: code,
-      scope: finalScope,
-      disableCache: false
+      disableCache: false,
+      scope: finalScope
     }),
     element = _b.element,
     error = _b.error;

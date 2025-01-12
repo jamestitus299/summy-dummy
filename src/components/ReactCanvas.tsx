@@ -1,11 +1,11 @@
-import React, {useState} from 'react';
+import React, { useMemo } from 'react';
 import {
   LiveProvider,
   LiveEditor,
   LiveError,
   LivePreview,
 } from 'react-live-runner';
-import { scope as defaultscope} from '../utils/Scope';
+import { scope as defaultscope } from '../utils/Scope';
 
 export interface ReactCanvasProps {
   code: string;
@@ -22,7 +22,10 @@ export default function ReactCanvas({
   showeditor = false,
   showerror = false,
 }: ReactCanvasProps) {
-  const finalScope = {...defaultscope, ...scope}
+  const finalScope = useMemo(
+    () => ({ ...defaultscope, ...scope }),
+    [defaultscope, scope]
+  );
   return (
     <div>
       <LiveProvider code={code} scope={finalScope}>

@@ -1,6 +1,6 @@
 {
   "name": "react-code-canvas",
-  "version": "2.0.1",
+  "version": "2.0.3",
   "type": "module",
   "description": "React component for running and previewing code with live editing capabilities",
   "main": "dist/index.js",

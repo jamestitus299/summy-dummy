@@ -4,14 +4,14 @@ import { scope as defaultscope } from '../utils/Scope';
 
 export interface CheckCodeRenderProps {
   code: string;
-  returnError: (error: string | null) => void;
+  return_error: (error: string | null) => void;
   scope?: Record<string, React.ComponentType | unknown>;
 }
 
 export default function CheckReactCode({
   code,
   scope,
-  returnError = () => {},
+  return_error = () => {},
 }: CheckCodeRenderProps) {
   const finalScope = useMemo(
     () => ({ ...defaultscope, ...scope }),
@@ -23,9 +23,9 @@ export default function CheckReactCode({
   });
 
   useEffect(() => {
-    returnError(error);
+    return_error(error);
     // console.log(errorMessage);
-  }, [error, returnError]);
+  }, [error, return_error]);
 
   return <div style={{ display: 'none' }}>{element}</div>;
 }

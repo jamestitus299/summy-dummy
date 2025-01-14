@@ -24,11 +24,11 @@ showeditor (boolean) - to display the editor to edit the reac t code
 scope (react components) - additional scope that the react code would need
 
 
-To check if the react code will render of not
+To check if the react code will render or not
 `<CheckReactCode 
     code={CODE} 
     scope={SCOPE} 
-    returnError={handleError} />`
+    return_error={handleError} />`
 
 code (string) - the react code to render (functional component, without import statement, and with export keyword)
 scope (react components) - additional scope that the react code would need

@@ -15113,21 +15113,22 @@ var scope = __assign(__assign({}, reactScope), rechartsScope);
 function CheckReactCode(_a) {
   var code = _a.code,
     scope$1 = _a.scope,
-    _b = _a.return_error,
-    return_error = _b === void 0 ? function () {} : _b;
+    _b = _a.returnError,
+    returnError = _b === void 0 ? function () {} : _b;
   var finalScope = React.useMemo(function () {
     return __assign(__assign({}, scope), scope$1);
   }, [scope, scope$1]);
   var _c = y({
       code: code,
-      scope: finalScope
+      scope: finalScope,
+      disableCache: true
     }),
     element = _c.element,
     error = _c.error;
   React.useEffect(function () {
-    return_error(error);
+    returnError(error);
     // console.log(errorMessage);
-  }, [error, return_error]);
+  }, [error, returnError]);
   return /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'none'

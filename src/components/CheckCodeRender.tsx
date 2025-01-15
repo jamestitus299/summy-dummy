@@ -4,14 +4,14 @@ import { scope as defaultscope } from '../utils/Scope';
 
 export interface CheckCodeRenderProps {
   code: string;
-  return_error: (error: string | null) => void;
+  returnError?: (error: string | null) => string | null | void;
   scope?: Record<string, React.ComponentType | unknown>;
 }
 
 export default function CheckReactCode({
   code,
   scope,
-  return_error = () => {},
+  returnError = () => {},
 }: CheckCodeRenderProps) {
   const finalScope = useMemo(
     () => ({ ...defaultscope, ...scope }),
@@ -20,12 +20,13 @@ export default function CheckReactCode({
   const { element, error } = useRunner({
     code,
     scope: finalScope,
+    disableCache: true
   });
 
   useEffect(() => {
-    return_error(error);
+    returnError(error);
     // console.log(errorMessage);
-  }, [error, return_error]);
+  }, [error, returnError]);
 
   return <div style={{ display: 'none' }}>{element}</div>;
 }

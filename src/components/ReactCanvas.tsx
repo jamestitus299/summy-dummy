@@ -10,17 +10,17 @@ import { scope as defaultscope } from '../utils/Scope';
 export interface ReactCanvasProps {
   code: string;
   scope?: Record<string, React.ComponentType | unknown>;
-  showpreview?: boolean;
-  showeditor?: boolean;
-  showerror?: boolean;
+  showPreview?: boolean;
+  showEditor?: boolean;
+  showError?: boolean;
 }
 
 export default function ReactCanvas({
   code,
   scope,
-  showpreview = true,
-  showeditor = false,
-  showerror = false,
+  showPreview = true,
+  showEditor = false,
+  showError = false,
 }: ReactCanvasProps) {
   const finalScope = useMemo(
     () => ({ ...defaultscope, ...scope }),
@@ -29,9 +29,9 @@ export default function ReactCanvas({
   return (
     <div>
       <LiveProvider code={code} scope={finalScope}>
-        {showpreview && <LivePreview />}
-        {showerror && <LiveError />}
-        {showeditor && <LiveEditor />}
+        {showPreview && <LivePreview />}
+        {showError && <LiveError />}
+        {showEditor && <LiveEditor />}
       </LiveProvider>
     </div>
   );

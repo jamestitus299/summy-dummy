@@ -15137,19 +15137,19 @@ function CheckReactCode(_a) {
 function ReactCanvas(_a) {
   var code = _a.code,
     scope$1 = _a.scope,
-    _b = _a.showpreview,
-    showpreview = _b === void 0 ? true : _b,
-    _c = _a.showeditor,
-    showeditor = _c === void 0 ? false : _c,
-    _d = _a.showerror,
-    showerror = _d === void 0 ? false : _d;
+    _b = _a.showPreview,
+    showPreview = _b === void 0 ? true : _b,
+    _c = _a.showEditor,
+    showEditor = _c === void 0 ? false : _c,
+    _d = _a.showError,
+    showError = _d === void 0 ? false : _d;
   var finalScope = useMemo(function () {
     return __assign(__assign({}, scope), scope$1);
   }, [scope, scope$1]);
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(LiveProvider, {
     code: code,
     scope: finalScope
-  }, showpreview && /*#__PURE__*/React.createElement(LivePreview, null), showerror && /*#__PURE__*/React.createElement(LiveError, null), showeditor && /*#__PURE__*/React.createElement(LiveEditor, null)));
+  }, showPreview && /*#__PURE__*/React.createElement(LivePreview, null), showError && /*#__PURE__*/React.createElement(LiveError, null), showEditor && /*#__PURE__*/React.createElement(LiveEditor, null)));
 }
 
 var ButtonText = function (_a) {

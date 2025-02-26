@@ -1,6 +1,6 @@
 {
   "name": "react-code-canvas",
-  "version": "3.0.2",
+  "version": "3.0.4",
   "type": "module",
   "sideEffects": true,
   "description": "React component for running and previewing code with live editing capabilities",
@@ -15,12 +15,18 @@
     "prepare": "npm run build"
   },
   "dependencies": {
+    "@shadcn/ui": "^0.0.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.475.0",
     "react-live-runner": "^1.0.0",
-    "recharts": "^2.15.0"
+    "recharts": "^2.15.0",
+    "tailwind-merge": "^3.0.1",
+    "tailwindcss-animate": "^1.0.7"
   },
   "peerDependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.22.0",

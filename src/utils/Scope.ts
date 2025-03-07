@@ -1,5 +1,8 @@
 import { rechartsScope } from "./rechartScope";
 import { lucideScope } from "./lucidreactScope";
+import { shadcnScope } from "./shadcnScope";
+// import { materialUIScope } from "./materialUiScope";
+
 import React, {
   useState,
   useEffect,
@@ -24,7 +27,9 @@ const reactScope = {
 
 // Export all the components and scope needed
 export const scope = {
+  // ...materialUIScope,
   ...lucideScope,
+  ...shadcnScope,
   ...rechartsScope,
   ...reactScope,
 };

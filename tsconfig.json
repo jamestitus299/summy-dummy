@@ -1,57 +1,57 @@
 {
-    "compilerOptions": {
-      // Target ES5 for wider browser compatibility
-      "target": "es5",
-      
-      // Use ES modules for tree shaking
-      "module": "esnext",
-      
-      // Include DOM types and latest ECMAScript features
-      "lib": ["dom", "dom.iterable", "esnext"],
-      
-      // React specific settings
-      "jsx": "react",
-      "isolatedModules": true,
-      
-      // Generate declaration files
-      "declaration": true,
-      "declarationDir": "dist",
-      
-      // Module resolution settings
-      "moduleResolution": "node",
-      "allowSyntheticDefaultImports": true,
-      "esModuleInterop": true,
-      
-      // Strict type checking
-      "strict": true,
-      "noFallthroughCasesInSwitch": true,
-      "noImplicitAny": true,
-      "noImplicitThis": true,
-      "strictNullChecks": true,
-      
-      // Additional checks
-      "forceConsistentCasingInFileNames": true,
-      "skipLibCheck": true,
-      "resolveJsonModule": true,
-      
-      // Output settings
-      "outDir": "dist",
-      "sourceMap": true,
-      
-      // Path aliases (if needed)
-      "baseUrl": ".",
-      "paths": {
-        "@/*": ["src/*"]
-      }
-    },
-    "include": [
-      "src/**/*"
+  "compilerOptions": {
+    // Target ES5 for wider browser compatibility
+    "target": "es5",
+    // Use ES modules for tree shaking
+    "module": "esnext",
+    // Include DOM types and latest ECMAScript features
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
     ],
-    "exclude": [
-      "node_modules",
-      "dist",
-      "**/*.test.ts",
-      "**/*.test.tsx",
-      "**/*.stories.tsx"
-    ]
-  }
+    // React specific settings
+    "jsx": "preserve",
+    "isolatedModules": true,
+    // Generate declaration files
+    "declaration": true,
+    "declarationDir": "dist",
+    // Module resolution settings
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    // Strict type checking
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    // Additional checks
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    // Output settings
+    "outDir": "dist",
+    "sourceMap": true,
+    // Path aliases (if needed)
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@/components/*": [
+        "./src/components/*"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.stories.tsx"
+  ]
+}

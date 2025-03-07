@@ -14,7 +14,7 @@ const ButtonText: React.FC<ButtonWithMessageProps> = ({
     setMessage("Hello, from JT");
   };
 
-  // const message = 'jam'
+  // const message = 'james'
   return (
     <div className="flex flex-col items-center justify-center space-y-4">
       <p className="text-xl text-gray-800">{message}</p>

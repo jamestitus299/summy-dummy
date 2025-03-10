@@ -11,7 +11,7 @@ const ButtonText: React.FC<ButtonWithMessageProps> = ({
   const [message, setMessage] = useState<string>(initialMessage);
 
   const handleClick = () => {
-    setMessage("Hello, from JT");
+    setMessage("Hello, from JT :)");
   };
 
   // const message = 'james'

@@ -1,11 +1,11 @@
 // // Import all shadcn/ui components
-import { Alert, AlertDescription, AlertTitle, } from '../components/ui/alert';
+import { Alert, AlertDescription, AlertTitle, } from '@/components/ui/alert';
 import {
     Accordion,
     AccordionContent,
     AccordionItem,
     AccordionTrigger,
-} from "../components/ui/accordion"
+} from "@/components/ui/accordion"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -16,11 +16,11 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-} from "../components/ui/alert-dialog"
-import { AspectRatio } from "../components/ui/aspect-ratio"
-import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
-import { Badge } from "../components/ui/badge"
-import { Button } from '../components/ui/button';
+} from "@/components/ui/alert-dialog"
+import { AspectRatio } from "@/components/ui/aspect-ratio"
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from "@/components/ui/badge"
+import { Button } from '@/components/ui/button';
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -28,29 +28,29 @@ import {
     BreadcrumbList,
     BreadcrumbPage,
     BreadcrumbSeparator,
-} from "../components/ui/breadcrumb"
-import { Calendar } from '../components/ui/calendar';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
+} from "@/components/ui/breadcrumb"
+import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Carousel,
     CarouselContent,
     CarouselItem,
     CarouselNext,
     CarouselPrevious,
-} from "../components/ui/carousel"
-import { Checkbox } from '../components/ui/checkbox';
+} from "@/components/ui/carousel"
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Collapsible,
     CollapsibleContent,
     CollapsibleTrigger,
-} from "../components/ui/collapsible"
+} from "@/components/ui/collapsible"
 import {
     ContextMenu,
     ContextMenuContent,
     ContextMenuItem,
     ContextMenuTrigger,
-} from "../components/ui/context-menu"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
+} from "@/components/ui/context-menu"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import {
     Drawer,
     DrawerClose,
@@ -60,13 +60,19 @@ import {
     DrawerHeader,
     DrawerTitle,
     DrawerTrigger,
-} from "../components/ui/drawer"
+} from "@/components/ui/drawer"
 import {
     DropdownMenu,
     DropdownMenuContent,
+    DropdownMenuGroup,
     DropdownMenuItem,
     DropdownMenuLabel,
+    DropdownMenuPortal,
     DropdownMenuSeparator,
+    DropdownMenuShortcut,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
@@ -74,25 +80,25 @@ import {
     HoverCard,
     HoverCardContent,
     HoverCardTrigger,
-} from "../components/ui/hover-card"
+} from "@/components/ui/hover-card"
 
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from "../components/ui/popover"
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
-import { ScrollArea } from "../components/ui/scroll-area"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Separator } from '../components/ui/separator';
-import { Slider } from '../components/ui/slider';
-import { Switch } from '../components/ui/switch';
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Textarea } from '../components/ui/textarea';
-import { Toaster } from '../components/ui/sonner';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
+} from "@/components/ui/popover"
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Toaster } from '@/components/ui/sonner';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export const shadcnScope = {
     Alert, AlertDescription, AlertTitle,
@@ -145,9 +151,15 @@ export const shadcnScope = {
     DrawerTrigger,
     DropdownMenu,
     DropdownMenuContent,
+    DropdownMenuGroup,
     DropdownMenuItem,
     DropdownMenuLabel,
+    DropdownMenuPortal,
     DropdownMenuSeparator,
+    DropdownMenuShortcut,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
     DropdownMenuTrigger,
     HoverCard,
     HoverCardContent,

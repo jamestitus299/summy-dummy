@@ -37,15 +37,22 @@
     "baseUrl": ".",
     "paths": {
       "@/*": [
-        "src/*"
+        "./*"
       ],
       "@/components/*": [
         "./src/components/*"
-      ]
-    }
+      ],
+      "@/lib/*": [
+        "./src/lib/*"
+      ],
+    },
+    "skipDefaultLibCheck": true
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "components/ui",
+    "src/lib",
+    "./src/types/*.d.ts"
   ],
   "exclude": [
     "node_modules",

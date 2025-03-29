@@ -1,5 +1,4 @@
-import type { StorybookConfig } from '@storybook/react-vite';
-import path from 'path';
+import type { StorybookConfig } from '@storybook/react-webpack5';
 
 const config: StorybookConfig = {
   "stories": [
@@ -7,26 +6,15 @@ const config: StorybookConfig = {
     "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"
   ],
   "addons": [
+    "@storybook/addon-webpack5-compiler-swc",
     "@storybook/addon-essentials",
     "@storybook/addon-onboarding",
     "@chromatic-com/storybook",
     "@storybook/addon-interactions"
   ],
   "framework": {
-    "name": "@storybook/react-vite",
+    "name": "@storybook/react-webpack5",
     "options": {}
-  },
-  "viteFinal": async (config) => {
-    // Add path aliases
-    if (config.resolve) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        '@': path.resolve(__dirname, '../src'),
-      };
-    }
-    
-    return config;
-  },
+  }
 };
-
 export default config;

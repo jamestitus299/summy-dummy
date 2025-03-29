@@ -2,7 +2,7 @@
   "name": "react-code-canvas",
   "version": "3.1.0",
   "type": "module",
-  "sideEffects": true,
+  "sideEffects": false,
   "description": "React component for running and previewing React code with live editing capabilities",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -12,6 +12,7 @@
   ],
   "scripts": {
     "build": "rollup -c",
+    "size": "size-limit",
     "prepare": "npm run build",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
@@ -64,6 +65,8 @@
     "@rollup/plugin-commonjs": "^25.0.0",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@size-limit/preset-big-lib": "^11.2.0",
     "@storybook/addon-essentials": "^8.6.11",
     "@storybook/addon-interactions": "^8.6.11",
     "@storybook/addon-links": "^8.6.11",
@@ -83,9 +86,21 @@
     "react-dom": "^18.0.0",
     "rollup": "^3.25.0",
     "rollup-plugin-typescript2": "^0.35.0",
+    "rollup-plugin-visualizer": "^5.14.0",
+    "size-limit": "^11.2.0",
     "storybook": "^8.6.11",
     "typescript": "^5.0.0"
   },
+  "size-limit": [
+    {
+      "path": "dist/index.js",
+      "limit": "250 KB"
+    },
+    {
+      "path": "dist/index.esm.js",
+      "limit": "250 KB"
+    }
+  ],
   "keywords": [
     "react",
     "code-runner",

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   LiveProvider,
   LiveEditor,
@@ -6,7 +6,6 @@ import {
   LivePreview,
 } from 'react-live-runner';
 import { scope as defaultscope } from '../scopes/Scope';
-// import { Helmet } from 'react-helmet';
 
 export interface ReactCanvasProps {
   code: string;
@@ -29,10 +28,6 @@ export default function ReactCanvas({
   );
   return (
     <div>
-      {/* <Helmet defer={false}>
-        <link rel="stylesheet" href="https://jamestitus299.github.io/css_server/jstyles.css" />
-        <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-      </Helmet> */}
       <LiveProvider code={code} scope={finalScope}>
         {showPreview && <LivePreview />}
         {showError && <LiveError />}

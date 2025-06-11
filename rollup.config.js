@@ -29,6 +29,7 @@ const external = [
   "clsx",
   "lucide-react",
   "sucrase",
+  "motion",
 ];
 
 const config = {

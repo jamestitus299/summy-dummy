@@ -4,7 +4,7 @@ import { HelmetProvider, Helmet } from "react-helmet-async"
 
 import { Header } from "./Header"
 import { scope } from "../scopes/Scope"
-import ReactCanvas from "../CoreComponents/ReactCanvas"
+import ReactCanvas from "../canvasComponents/ReactCanvas"
 
 import "./page.css"
 

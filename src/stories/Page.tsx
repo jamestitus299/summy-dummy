@@ -1,34 +1,54 @@
-import React from "react";
-import ButtonText from "../Components/ButtonText";
-import ReactCanvas from "../Components/ReactCanvas";
-import { scope } from "../scopes/Scope";
-// import "./page.css"
-import { Helmet } from "react-helmet";
+import React from "react"
+
+import { HelmetProvider, Helmet } from "react-helmet-async"
+
+import { Header } from "./Header"
+import { scope } from "../scopes/Scope"
+import ReactCanvas from "../CoreComponents/ReactCanvas"
+
+import "./page.css"
+
+type User = {
+  name: string
+}
 
 export const Page: React.FC = () => {
+  const [user, setUser] = React.useState<User>()
+
   return (
-    <div>
-      <Helmet defer={false}>
-        <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-        {/* <link
-          rel="stylesheet"
-          href="https://jamestitus299.github.io/css_server/jstyles.css"
-        /> */}
-      </Helmet>
-      <section className="p-4">
-        <h2 className="text-3xl font-bold text-center">
-          Try the ReactCanvas here
-        </h2>
-        <ButtonText />
-      </section>
-      <div className="p-2">
-        <ReactCanvas
-          scope={scope}
-          code={""}
-          showEditor={true}
-          showError={true}
+    <HelmetProvider>
+      <article>
+        <Header
+          user={user}
+          onLogin={() => setUser({ name: "James Titus" })}
+          onLogout={() => setUser(undefined)}
+          onCreateAccount={() => setUser({ name: "James Titus" })}
         />
-      </div>
-    </div>
-  );
-};
+        <section>
+          <div>
+            <Helmet>
+              <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+              {/* <link
+              rel="stylesheet"
+              href="https://jamestitus299.github.io/css_server/jstyles.css"
+            /> */}
+            </Helmet>
+            <section className="p-4">
+              <h2 className="text-3xl font-bold text-center">
+                Try the ReactCanvas here
+              </h2>
+            </section>
+            <div className="p-2">
+              <ReactCanvas
+                scope={scope}
+                code={""}
+                showEditor={true}
+                showError={true}
+              />
+            </div>
+          </div>
+        </section>
+      </article>
+    </HelmetProvider>
+  )
+}

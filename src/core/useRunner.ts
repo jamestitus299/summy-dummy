@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect, createElement, ReactElement } from 'react'
+import { useState, useRef, useEffect, createElement, ReactElement } from "react"
 
-import { Runner } from './runner'
-import { RunnerOptions } from './types'
+import { Runner } from "./runner"
+import { RunnerOptions } from "./types"
 
 export type UseRunnerProps = RunnerOptions & {
   /** whether to cache previous element when error occurs with current code */

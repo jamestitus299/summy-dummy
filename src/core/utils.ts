@@ -1,7 +1,7 @@
-import React, { createElement, isValidElement, ReactElement } from 'react'
+import React, { createElement, isValidElement, ReactElement } from "react"
 
-import { transform, normalizeCode } from './transform'
-import { RunnerOptions, Scope } from './types'
+import { transform, normalizeCode } from "./transform"
+import { RunnerOptions, Scope } from "./types"
 
 const evalCode = (code: string, scope: Scope) => {
   // `default` is not allowed in `new Function`
@@ -30,8 +30,8 @@ export const generateElement = (
   const result = exports.default
   if (!result) return null
   if (isValidElement(result)) return result
-  if (typeof result === 'function') return createElement(result)
-  if (typeof result === 'string') {
+  if (typeof result === "function") return createElement(result)
+  if (typeof result === "string") {
     return result as unknown as ReactElement
   }
   return null

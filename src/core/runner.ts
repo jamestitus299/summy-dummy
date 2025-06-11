@@ -1,7 +1,7 @@
-import { Component, ReactElement } from 'react'
+import { Component, ReactElement } from "react"
 
-import { generateElement } from './utils'
-import { RunnerOptions, Scope } from './types'
+import { generateElement } from "./utils"
+import { RunnerOptions, Scope } from "./types"
 
 export type RunnerProps = RunnerOptions & {
   /** callback on code be rendered, returns error message when code is invalid */

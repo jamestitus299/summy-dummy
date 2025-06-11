@@ -1,15 +1,12 @@
 {
   "compilerOptions": {
+    "types": [],
     // Target ES5 for wider browser compatibility
     "target": "es5",
     // Use ES modules for tree shaking
     "module": "esnext",
     // Include DOM types and latest ECMAScript features
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     // React specific settings
     "jsx": "preserve",
     "isolatedModules": true,
@@ -36,24 +33,11 @@
     // Path aliases (if needed)
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ],
-      "@/components/*": [
-        "./src/components/*"
-      ],
-      "@/lib/*": [
-        "./src/lib/*"
-      ],
+      "@/*": ["./*"]
     },
     "skipDefaultLibCheck": true
   },
-  "include": [
-    "src/**/*",
-    "components/ui",
-    "src/lib",
-    "./src/types/*.d.ts"
-  ],
+  "include": ["src/**/*", "./src/types/*.d.ts"],
   "exclude": [
     "node_modules",
     "dist",

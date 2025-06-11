@@ -1552,15 +1552,4 @@ export declare const scope: {
         displayName: string;
     };
     PolarRadiusAxis: typeof import("recharts").PolarRadiusAxis;
-    motion: (<Props, TagName extends string = "div">(Component: string | TagName | React.ComponentType<Props>, { forwardMotionProps }?: {
-        forwardMotionProps: boolean;
-    }) => TagName extends "symbol" | "clipPath" | "filter" | "mask" | "marker" | "text" | "path" | "animate" | "circle" | "switch" | "stop" | keyof import("framer-motion/dist/types.d-CtuPurYT").b | "svg" | "defs" | "desc" | "ellipse" | "feBlend" | "feColorMatrix" | "feComponentTransfer" | "feComposite" | "feConvolveMatrix" | "feDiffuseLighting" | "feDisplacementMap" | "feDistantLight" | "feDropShadow" | "feFlood" | "feFuncA" | "feFuncB" | "feFuncG" | "feFuncR" | "feGaussianBlur" | "feImage" | "feMerge" | "feMergeNode" | "feMorphology" | "feOffset" | "fePointLight" | "feSpecularLighting" | "feSpotLight" | "feTile" | "feTurbulence" | "foreignObject" | "g" | "image" | "line" | "linearGradient" | "metadata" | "pattern" | "polygon" | "polyline" | "radialGradient" | "rect" | "textPath" | "tspan" | "use" | "view" ? import("motion/react").DOMMotionComponents[TagName] : React.ComponentType<Omit<import("framer-motion/dist/types.d-CtuPurYT").c<Props>, "children"> & {
-        children?: ("children" extends keyof Props ? Props[keyof Props & "children"] | import("framer-motion/dist/types.d-CtuPurYT").c<Props>[keyof Props & "children"] : import("framer-motion/dist/types.d-CtuPurYT").c<Props>["children"]) | undefined;
-    }>) & import("framer-motion/dist/types.d-CtuPurYT").d & import("framer-motion/dist/types.d-CtuPurYT").S & {
-        create: <Props, TagName extends string = "div">(Component: string | TagName | React.ComponentType<Props>, { forwardMotionProps }?: {
-            forwardMotionProps: boolean;
-        }) => TagName extends "symbol" | "clipPath" | "filter" | "mask" | "marker" | "text" | "path" | "animate" | "circle" | "switch" | "stop" | keyof import("framer-motion/dist/types.d-CtuPurYT").b | "svg" | "defs" | "desc" | "ellipse" | "feBlend" | "feColorMatrix" | "feComponentTransfer" | "feComposite" | "feConvolveMatrix" | "feDiffuseLighting" | "feDisplacementMap" | "feDistantLight" | "feDropShadow" | "feFlood" | "feFuncA" | "feFuncB" | "feFuncG" | "feFuncR" | "feGaussianBlur" | "feImage" | "feMerge" | "feMergeNode" | "feMorphology" | "feOffset" | "fePointLight" | "feSpecularLighting" | "feSpotLight" | "feTile" | "feTurbulence" | "foreignObject" | "g" | "image" | "line" | "linearGradient" | "metadata" | "pattern" | "polygon" | "polyline" | "radialGradient" | "rect" | "textPath" | "tspan" | "use" | "view" ? import("motion/react").DOMMotionComponents[TagName] : React.ComponentType<Omit<import("framer-motion/dist/types.d-CtuPurYT").c<Props>, "children"> & {
-            children?: ("children" extends keyof Props ? Props[keyof Props & "children"] | import("framer-motion/dist/types.d-CtuPurYT").c<Props>[keyof Props & "children"] : import("framer-motion/dist/types.d-CtuPurYT").c<Props>["children"]) | undefined;
-        }>;
-    };
 };

@@ -1,11 +1,11 @@
 // rollup.config.js
-import resolve from "@rollup/plugin-node-resolve";
-import commonjs from "@rollup/plugin-commonjs";
-import babel from "@rollup/plugin-babel";
-import typescript from "rollup-plugin-typescript2";
-import json from "@rollup/plugin-json";
-import terser from "@rollup/plugin-terser";
-import { visualizer } from "rollup-plugin-visualizer";
+import resolve from "@rollup/plugin-node-resolve"
+import commonjs from "@rollup/plugin-commonjs"
+import babel from "@rollup/plugin-babel"
+import typescript from "rollup-plugin-typescript2"
+import json from "@rollup/plugin-json"
+import terser from "@rollup/plugin-terser"
+import { visualizer } from "rollup-plugin-visualizer"
 
 // List of Storybook-specific files/patterns to exclude
 const storybookExclude = [
@@ -16,7 +16,7 @@ const storybookExclude = [
   ".storybook/**",
   "src/stories/**",
   "stories/",
-];
+]
 
 // Add all external dependencies, including Radix UI packages
 const external = [
@@ -25,12 +25,12 @@ const external = [
   "react-live-runner",
   "recharts",
   /^@radix-ui\//, // Exclude all Radix UI components
-  "class-variance-authority",
-  "clsx",
   "lucide-react",
   "sucrase",
   "motion",
-];
+  "react-icons",
+  "recharts",
+]
 
 const config = {
   input: "src/index.ts",
@@ -62,7 +62,7 @@ const config = {
     commonjs(),
     babel({
       babelHelpers: "bundled",
-      exclude: ["node_modules/**", ...storybookExclude],
+      exclude: ["node_modules/**", ...storybookExclude, ...external],
       presets: ["@babel/preset-react"],
       extensions: [".js", ".jsx", ".ts", ".tsx"],
     }),
@@ -72,6 +72,6 @@ const config = {
       open: true, // Open it in the browser after build
     }),
   ],
-};
+}
 
-export default config;
+export default config

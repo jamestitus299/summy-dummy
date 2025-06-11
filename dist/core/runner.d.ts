@@ -1,5 +1,5 @@
-import { Component, ReactElement } from 'react';
-import { RunnerOptions, Scope } from './types';
+import { Component, ReactElement } from "react";
+import { RunnerOptions, Scope } from "./types";
 export type RunnerProps = RunnerOptions & {
     /** callback on code be rendered, returns error message when code is invalid */
     onRendered?: (error?: Error) => void;
@@ -17,6 +17,6 @@ export declare class Runner extends Component<RunnerProps, RunnerState> {
     componentDidMount(): void;
     shouldComponentUpdate(nextProps: RunnerProps, nextState: RunnerState): boolean;
     componentDidUpdate(): void;
-    render(): ReactElement<any, string | import("react").JSXElementConstructor<any>> | null;
+    render(): ReactElement<unknown, string | import("react").JSXElementConstructor<any>> | null;
 }
 export {};

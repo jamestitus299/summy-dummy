@@ -2,8 +2,10 @@ import React from "react";
 import ButtonText from "../coreComponents/ButtonText";
 import ReactCanvas from "../coreComponents/ReactCanvas";
 import { scope } from "../scopes/Scope";
-// import "./page.css"
+
 import { Helmet } from "react-helmet";
+
+import EditableTextPopup from "../components/editTextComponent/editText";
 
 export const Page: React.FC = () => {
   return (
@@ -29,6 +31,11 @@ export const Page: React.FC = () => {
           showError={true}
         />
       </div>
+      <EditableTextPopup
+        content="title"
+        element="h1"
+        styles="text-4xl font-bold text-gray-900 dark:text-gray-100"
+      />
     </div>
   );
 };

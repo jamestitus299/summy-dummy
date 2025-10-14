@@ -1,9 +1,11 @@
 import { rechartsScope } from "./rechartScope";
 import { lucideScope } from "./lucidreactScope";
 import {reactIconsFaScope} from "./reactIconsScope";
-import { motion } from "motion/react";
+// import { motion } from "motion/react";
 // import { shadcnScope } from "./shadcnScope";
 // import { materialUIScope } from "./materialUiScope";
+import { animejsScope } from "./animejsScope";
+
 
 import React, {
   useState,
@@ -31,7 +33,8 @@ const reactScope = {
 export const scope = {
   // ...materialUIScope,
   // ...shadcnScope,
-  motion,
+  // motion,
+  ...animejsScope,
   ...reactIconsFaScope,
   ...lucideScope,
   ...rechartsScope,

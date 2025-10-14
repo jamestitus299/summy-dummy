@@ -1,9 +1,6 @@
 import { rechartsScope } from "./rechartScope";
 import { lucideScope } from "./lucidreactScope";
 import {reactIconsFaScope} from "./reactIconsScope";
-import { motion } from "motion/react";
-// import { shadcnScope } from "./shadcnScope";
-// import { materialUIScope } from "./materialUiScope";
 
 import React, {
   useState,
@@ -29,9 +26,6 @@ const reactScope = {
 
 // Export all the components and scope needed
 export const scope = {
-  // ...materialUIScope,
-  // ...shadcnScope,
-  motion,
   ...reactIconsFaScope,
   ...lucideScope,
   ...rechartsScope,

@@ -1,6 +1,6 @@
 import React from "react";
-import ButtonText from "../Components/ButtonText";
-import ReactCanvas from "../Components/ReactCanvas";
+import ButtonText from "../coreComponents/ButtonText";
+import ReactCanvas from "../coreComponents/ReactCanvas";
 import { scope } from "../scopes/Scope";
 // import "./page.css"
 import { Helmet } from "react-helmet";

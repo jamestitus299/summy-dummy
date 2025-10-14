@@ -34,7 +34,7 @@ export const Page: React.FC = () => {
       <EditableTextPopup
         content="title"
         element="h1"
-        styles="text-4xl font-bold text-gray-900 dark:text-gray-100"
+        styles="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-96 text-5xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent text-center"
       />
     </div>
   );

@@ -1,16 +1,25 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./edittext.css";
+
+type EditableTextPopupProps = {
+  content?: string;
+  element?: keyof JSX.IntrinsicElements; // h1, p, etc.
+  placeholder?: string;
+  styles?: string;
+  onChange?: (newText: string) => void;
+};
 
 export default function EditableTextPopup({
   content = "",
   element = "p",
   placeholder = "Click to edit...",
+  styles = "",
   onChange,
-}) {
-  const [text, setText] = useState(content);
-  const [isEditing, setIsEditing] = useState(false);
-  const [tempText, setTempText] = useState(content);
-  const textareaRef = useRef(null);
+}: EditableTextPopupProps) {
+  const [text, setText] = useState<string>(content);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [tempText, setTempText] = useState<string>(content);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     setText(content);
@@ -23,29 +32,32 @@ export default function EditableTextPopup({
     }
   }, [isEditing]);
 
-  const handleOpen = () => {
+  const handleOpen = (): void => {
     setTempText(text);
     setIsEditing(true);
   };
 
-  const handleSave = () => {
+  const handleSave = (): void => {
     setText(tempText);
     setIsEditing(false);
     if (onChange) onChange(tempText);
   };
 
-  const handleCancel = () => {
+  const handleCancel = (): void => {
     setTempText(text);
     setIsEditing(false);
   };
 
-  const Tag = element;
+  const Tag: keyof JSX.IntrinsicElements = element;
   const displayText = text || placeholder;
 
   return (
     <>
       {/* Display Text */}
-      <Tag onClick={handleOpen} className="editable-text-display">
+      <Tag
+        onClick={handleOpen}
+        className={`editable-text-display ${styles ? styles : ""}`}
+      >
         {displayText}
       </Tag>
 
@@ -58,7 +70,9 @@ export default function EditableTextPopup({
             <textarea
               ref={textareaRef}
               value={tempText}
-              onChange={(e) => setTempText(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setTempText(e.target.value)
+              }
               rows={6}
               className="editable-popup-textarea"
             />

@@ -1,6 +1,6 @@
-export { default as CheckReactCode } from './Components/CheckCodeRender';
-export { default as ReactCanvas } from './Components/ReactCanvas';
-export type { CheckCodeRenderProps } from './Components/CheckCodeRender';
-export type { ReactCanvasProps } from './Components/ReactCanvas';
+export { default as CheckReactCode } from './coreComponents/CheckCodeRender';
+export { default as ReactCanvas } from './coreComponents/ReactCanvas';
+export type { CheckCodeRenderProps } from './coreComponents/CheckCodeRender';
+export type { ReactCanvasProps } from './coreComponents/ReactCanvas';
 
-export { default as JamButton } from './Components/ButtonText';
+export { default as JamButton } from './coreComponents/ButtonText';

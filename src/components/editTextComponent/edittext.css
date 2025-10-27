@@ -1,0 +1,95 @@
+/* Overlay */
+.editable-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+/* Popup card */
+.editable-popup-card {
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  padding: 24px;
+  position: relative;
+}
+
+/* Header */
+.editable-popup-header {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 16px;
+}
+
+/* Text area */
+.editable-popup-textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 1rem;
+  color: #1f2937;
+  resize: none;
+  outline: none;
+}
+
+.editable-popup-textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.3);
+}
+
+/* Buttons container */
+.editable-popup-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* Cancel button */
+.editable-popup-cancel {
+  padding: 8px 16px;
+  border-radius: 6px;
+  background-color: #e5e7eb;
+  color: #374151;
+  border: none;
+  cursor: pointer;
+}
+
+.editable-popup-cancel:hover {
+  background-color: #d1d5db;
+}
+
+/* Save button */
+.editable-popup-save {
+  padding: 8px 16px;
+  border-radius: 6px;
+  background-color: #3b82f6;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+}
+
+.editable-popup-save:hover {
+  background-color: #2563eb;
+}
+
+/* Display text */
+.editable-text-display {
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 4px 8px;
+  transition: background-color 0.2s, outline 0.2s;
+}
+
+.editable-text-display:hover {
+  background-color: #f3f4f6;
+  outline: 1px solid #d1d5db;
+}

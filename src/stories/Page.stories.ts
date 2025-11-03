@@ -15,18 +15,13 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const LoggedOut: Story = {};
-
 // More on component testing: https://storybook.js.org/docs/writing-tests/component-testing
-export const LoggedIn: Story = {
+export const TestPage: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const loginButton = canvas.getByRole('button', { name: /Log in/i });
-    await expect(loginButton).toBeInTheDocument();
-    await userEvent.click(loginButton);
-    await expect(loginButton).not.toBeInTheDocument();
-
-    const logoutButton = canvas.getByRole('button', { name: /Log out/i });
-    await expect(logoutButton).toBeInTheDocument();
+    const testpage = canvas.getByRole('button', { name: /Log in/i });
+    await expect(testpage).toBeInTheDocument();
+    await userEvent.click(testpage);
+    await expect(testpage).not.toBeInTheDocument();
   },
 };

@@ -1,5 +1,4 @@
 import React from "react";
-import ButtonText from "../coreComponents/ButtonText";
 import ReactCanvas from "../coreComponents/ReactCanvas";
 import { scope } from "../scopes/Scope";
 

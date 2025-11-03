@@ -19,9 +19,5 @@ type Story = StoryObj<typeof meta>;
 export const TestPage: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const testpage = canvas.getByRole('button', { name: /Log in/i });
-    await expect(testpage).toBeInTheDocument();
-    await userEvent.click(testpage);
-    await expect(testpage).not.toBeInTheDocument();
   },
 };

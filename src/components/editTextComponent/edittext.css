@@ -2,94 +2,110 @@
 .editable-popup-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(6px);
+  background-color: rgba(0, 0, 0, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 50;
 }
 
-/* Popup card */
+/* Card */
 .editable-popup-card {
-  background-color: #ffffff;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 24px 28px;
   width: 100%;
-  max-width: 600px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-  padding: 24px;
-  position: relative;
+  max-width: 520px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.18s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Header */
 .editable-popup-header {
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 600;
-  color: #1f2937;
+  color: #111827;
   margin-bottom: 16px;
 }
 
-/* Text area */
+/* Textarea */
 .editable-popup-textarea {
   width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
-  font-size: 1rem;
-  color: #1f2937;
+  height: 140px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #dadce0;
+  background: #fafafa;
+  font-size: 0.95rem;
+  color: #111;
   resize: none;
   outline: none;
+  transition: border 0.2s, background 0.2s;
 }
 
 .editable-popup-textarea:focus {
   border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59,130,246,0.3);
+  background: #ffffff;
 }
 
-/* Buttons container */
+/* Buttons */
 .editable-popup-buttons {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 16px;
+  gap: 10px;
+  margin-top: 18px;
 }
 
-/* Cancel button */
-.editable-popup-cancel {
-  padding: 8px 16px;
-  border-radius: 6px;
-  background-color: #e5e7eb;
-  color: #374151;
-  border: none;
+.editable-popup-cancel,
+.editable-popup-save {
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
   cursor: pointer;
+  transition: background 0.15s, border 0.15s;
+}
+
+.editable-popup-cancel {
+  background: #fafafa;
+  color: #374151;
 }
 
 .editable-popup-cancel:hover {
-  background-color: #d1d5db;
+  background: #f3f4f6;
 }
 
-/* Save button */
+/* Primary Save Button */
 .editable-popup-save {
-  padding: 8px 16px;
-  border-radius: 6px;
-  background-color: #3b82f6;
-  color: #ffffff;
-  border: none;
-  cursor: pointer;
+  background: #111827;
+  color: white;
+  border-color: #111827;
 }
 
 .editable-popup-save:hover {
-  background-color: #2563eb;
+  background: #000;
 }
 
-/* Display text */
+/* Display text (clickable) */
 .editable-text-display {
   cursor: pointer;
-  border-radius: 6px;
-  padding: 4px 8px;
-  transition: background-color 0.2s, outline 0.2s;
+  transition: .15s;
 }
 
 .editable-text-display:hover {
-  background-color: #f3f4f6;
-  outline: 1px solid #d1d5db;
+  background-color: #f2f3f5;
 }

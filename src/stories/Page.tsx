@@ -20,7 +20,6 @@ export const Page: React.FC = () => {
         <h2 className="text-3xl font-bold text-center">
           Try the ReactCanvas here
         </h2>
-        {/* <ButtonText /> */}
       </section>
       <div className="p-2">
         <ReactCanvas

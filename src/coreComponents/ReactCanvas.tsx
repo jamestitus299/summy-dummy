@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
-import {
-  LiveProvider,
-  LiveEditor,
-  LiveError,
-  LivePreview,
-} from 'react-live-runner';
+
+import { LiveProvider } from './core/LiveProvider';
+import { LiveEditor } from './core/LiveEditor';
+import { LiveError } from './core/LiveError';
+import { LivePreview } from './core/LivePreview';
+
 import { scope as defaultscope } from '../scopes/Scope';
 
 export interface ReactCanvasProps {

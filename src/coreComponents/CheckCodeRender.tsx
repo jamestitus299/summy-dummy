@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
-import { useRunner } from 'react-runner';
+import { useRunner } from './core/useRunner';
 import { scope as defaultscope } from '../scopes/Scope';
 
 export interface CheckCodeRenderProps {

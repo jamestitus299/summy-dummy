@@ -1,0 +1,2 @@
+This software includes portions of code from:
+- React Runner (MIT License, Copyright (c) 2019 Neo)

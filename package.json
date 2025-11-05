@@ -1,6 +1,6 @@
 {
   "name": "react-code-canvas",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "type": "module",
   "sideEffects": false,
   "description": "Package to run and preview React code with live editing capabilities in a browser.",
@@ -84,7 +84,6 @@
     "code-editor"
   ],
   "author": "James Titus",
-  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/jamestitus299/summy-dummy.git"

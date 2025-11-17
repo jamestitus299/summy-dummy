@@ -6,6 +6,7 @@ import typescript from "rollup-plugin-typescript2";
 import json from "@rollup/plugin-json";
 import terser from "@rollup/plugin-terser";
 import { visualizer } from "rollup-plugin-visualizer";
+import importCss from "rollup-plugin-import-css";
 
 // List of Storybook-specific files/patterns to exclude
 const storybookExclude = [
@@ -70,6 +71,7 @@ const config = {
       filename: "bundle-analysis.html", // Output file
       open: true, // Open it in the browser after build
     }),
+    importCss(),
   ],
 };
 

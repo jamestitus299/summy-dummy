@@ -1,6 +1,7 @@
 import { rechartsScope } from "./rechartScope";
 import { lucideScope } from "./lucidreactScope";
 import {reactIconsFaScope} from "./reactIconsScope";
+import {editComponentScope} from "./editComponentScope";
 
 import React, {
   useState,
@@ -30,4 +31,5 @@ export const scope = {
   ...lucideScope,
   ...rechartsScope,
   ...reactScope,
+  ...editComponentScope,
 };

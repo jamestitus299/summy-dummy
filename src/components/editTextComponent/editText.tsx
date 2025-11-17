@@ -14,7 +14,7 @@ import "./edittext.css";
 type TextElementTag = keyof JSX.IntrinsicElements;
 
 
-type EditableTextPopupProps = {
+type EditableTextProps = {
   textContent?: string;
   elementType?: TextElementTag,
   placeholder?: string;
@@ -22,13 +22,13 @@ type EditableTextPopupProps = {
   onChange?: (newText: string) => void;
 };
 
-export default function EditableTextPopup({
+export default function EditableText({
   textContent = "",
   elementType = "p",
   placeholder = "Click to edit...",
   tailwindStyles = "",
   onChange,
-}: EditableTextPopupProps) {
+}: EditableTextProps) {
   const [text, setText] = useState<string>(textContent);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [tempText, setTempText] = useState<string>(textContent);

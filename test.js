@@ -1,4 +1,4 @@
-import { transformJSXTextToEditableText, transformEditableTextToJSX } from "./src/coreComponents/core/transformToEditableText.js"
+import { transformJSXTextToEditableText, transformEditableTextToJSX } from "./src/coreComponents/core/custom-transformer.js"
 
 const originalCode = `
 

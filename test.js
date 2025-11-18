@@ -1,8 +1,17 @@
-import {transformJSXTextToEditableText} from "./src/coreComponents/core/transformToEditableText.js"
+import { transformJSXTextToEditableText, transformEditableTextToJSX } from "./src/coreComponents/core/transformToEditableText.js"
 
 const originalCode = `
-<></>
+
 `;
 
-const transformed = transformJSXTextToEditableText(originalCode);
-console.log(transformed);
+console.log(originalCode)
+
+const editTransformedCode = transformJSXTextToEditableText(originalCode);
+console.log(editTransformedCode);
+
+const transformedlCode = `
+
+`;
+
+const jsxcode = transformEditableTextToJSX(transformedlCode)
+console.log(jsxcode)

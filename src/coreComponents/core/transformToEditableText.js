@@ -149,3 +149,85 @@ export function transformJSXTextToEditableText(code, options = {}) {
 
   return transformedCode;
 }
+
+/**
+ * Reverse transform <EditableText> into original JSX elements.
+ * @param {string} code - JSX code containing <EditableText>.
+ * @returns {string} - Reconstructed JSX.
+ */
+export function transformEditableTextToJSX(code) {
+  const ast = parser.parse(code, {
+    sourceType: "module",
+    plugins: ["jsx"],
+  });
+
+  traverse.default(ast, {
+    JSXElement(path) {
+      const opening = path.node.openingElement;
+      if (!t.isJSXIdentifier(opening.name)) return;
+
+      const tagName = opening.name.name;
+      if (tagName !== "EditableText") return;
+
+      const attributes = opening.attributes;
+
+      // Extract props
+      const props = {};
+      attributes.forEach((attr) => {
+        if (t.isJSXAttribute(attr) && t.isJSXIdentifier(attr.name)) {
+          const propName = attr.name.name;
+          if (t.isStringLiteral(attr.value)) {
+            props[propName] = attr.value.value;
+          } else if (
+            t.isJSXExpressionContainer(attr.value) &&
+            t.isBooleanLiteral(attr.value.expression)
+          ) {
+            props[propName] = attr.value.expression.value;
+          }
+        }
+      });
+
+      const elementType = props.elementType || "span";
+      const textContent = props.textContent || "";
+      const tailwindStyles = props.tailwindStyles;
+      const multiline = props.multiline;
+
+      // Build new opening tag
+      const newOpening = t.jsxOpeningElement(
+        t.jsxIdentifier(elementType),
+        [
+          ...(tailwindStyles
+            ? [
+              t.jsxAttribute(
+                t.jsxIdentifier("className"),
+                t.stringLiteral(tailwindStyles)
+              ),
+            ]
+            : []),
+        ],
+        false
+      );
+
+      // Determine children
+      const children =
+        path.node.children.length > 0
+          ? path.node.children // preserve nested children
+          : [t.jsxText(textContent)]; // or restore textContent as text
+
+      // Closing tag
+      const newClosing = t.jsxClosingElement(t.jsxIdentifier(elementType));
+
+      // Construct new element
+      const newElement = t.jsxElement(newOpening, newClosing, children);
+
+      path.replaceWith(newElement);
+    },
+  });
+
+  let { code: transformedCode } = generator.default(ast, {
+    retainLines: true,
+  });
+  transformedCode = decodeUnicodeEscape(transformedCode) // decode unicode escape characters
+
+  return transformedCode;
+}

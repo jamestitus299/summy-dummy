@@ -52,11 +52,11 @@ export default function EditableText({
   return (
     <>
       {isEditing ? (
-        <div className="inline-edit-container">
+        <div className="">
           {multiline ? (
             <textarea
               ref={inputRef}
-              className={`inline-edit-textarea ${tailwindStyles}`}
+              className={`${tailwindStyles} resize`}
               value={tempText}
               onChange={(e) => setTempText(e.target.value)}
               onBlur={handleSave}
@@ -67,12 +67,12 @@ export default function EditableText({
                   handleSave();
                 }
               }}
-              rows={3}
+              rows={4}
             />
           ) : (
             <input
               ref={inputRef}
-              className={`inline-edit-input ${tailwindStyles}`}
+              className={`${tailwindStyles}`}
               value={tempText}
               onChange={(e) => setTempText(e.target.value)}
               onBlur={handleSave}
@@ -85,7 +85,7 @@ export default function EditableText({
         </div>
       ) : (
         <Tag
-          className={`editable-text-display inline-block cursor-pointer ${tailwindStyles}`}
+          className={`${tailwindStyles}`}
           onClick={() => setIsEditing(true)}
         >
           {displayText}

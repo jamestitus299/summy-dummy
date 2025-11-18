@@ -1,214 +1,117 @@
-import { transform, normalizeCode } from '../transform'
+import { transform, normalizeCode } from "../transform";
 
-test('react component', () => {
-  const result = transform(`<div>react-runner</div>`)
-  expect(result).toMatchInlineSnapshot(
-    `"React.createElement('div', null, \\"react-runner\\")"`
-  )
-})
+describe("transform", () => {
+  test("react component", () => {
+    const result = transform(`<div>react-runner</div>`);
+    expect(result).toBe(`React.createElement('div', null, "react-runner")`);
+  });
 
-test('react component', () => {
-  const result = transform(`() => <div>react-runner</div>`)
-  expect(result).toMatchInlineSnapshot(
-    `"() => React.createElement('div', null, \\"react-runner\\")"`
-  )
-})
+  test("react component (arrow function)", () => {
+    const result = transform(`() => <div>react-runner</div>`);
+    expect(result).toBe(`() => React.createElement('div', null, "react-runner")`);
+  });
 
-test('react component with typescript', () => {
-  const result = transform(
-    `(props: { foo?: number }) => <div>react-runner</div>`
-  )
-  expect(result).toMatchInlineSnapshot(
-    `"(props) => React.createElement('div', null, \\"react-runner\\")"`
-  )
-})
+  test("react component with TypeScript", () => {
+    const result = transform(`(props: { foo?: number }) => <div>react-runner</div>`);
+    expect(result).toBe(`(props) => React.createElement('div', null, "react-runner")`);
+  });
 
-test('imports', () => {
-  const code = `import { useState, useEffect } from 'react'
-    import styled from 'styled-components'
-    
-    const Button = styled.button\`
-      color: steelblue;
-    \`
-    
-    render(<Button>Click me</Button>)`
-
-  expect(transform(code)).toMatchInlineSnapshot(`
-    " function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-        var _styledcomponents = require('styled-components'); var _styledcomponents2 = _interopRequireDefault(_styledcomponents);
-        
-        const Button = _styledcomponents2.default.button\`
-          color: steelblue;
-        \`
-        
-        render(React.createElement(Button, null, \\"Click me\\" ))"
-  `)
-})
-
-test('normalize inline JSX', () => {
-  expect(
-    normalizeCode(`
-  
-  <>`)
-  ).toMatchInlineSnapshot(`
-    "
+  test("imports", () => {
+    const code = `
+      import { useState, useEffect } from 'react'
+      import styled from 'styled-components'
       
-      export default <>"
-  `)
-
-  expect(
-    normalizeCode(`
-  
-  a<>`)
-  ).toMatchInlineSnapshot(`
-    "
+      const Button = styled.button\`
+        color: steelblue;
+      \`
       
-      a<>"
-  `)
+      render(<Button>Click me</Button>)
+    `;
 
-  expect(
-    normalizeCode(`
-  
-  <a>`)
-  ).toMatchInlineSnapshot(`
-    "
-      
-      export default <a>"
-  `)
-})
+    const result = transform(code);
 
-test('normalize inline function component', () => {
-  expect(
-    normalizeCode(`
-  
-  function`)
-  ).toMatchInlineSnapshot(`
-    "
-      
-      function"
-  `)
+    // You can still use inline snapshots for long outputs, they're OK here
+    expect(result).toMatchInlineSnapshot(`
+      " function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+          var _styledcomponents = require('styled-components'); var _styledcomponents2 = _interopRequireDefault(_styledcomponents);
+          
+          const Button = _styledcomponents2.default.button\`
+            color: steelblue;
+          \`
+          
+          render(React.createElement(Button, null, \\"Click me\\" ))"
+    `);
+  });
+});
 
-  expect(
-    normalizeCode(`
-  
-  function(`)
-  ).toMatchInlineSnapshot(`
-    "
+describe("normalizeCode", () => {
+  test("normalize inline JSX", () => {
+    expect(normalizeCode(`\n\n  <>`)).toBe(`
       
-      export default function("
-  `)
+      export default <>`);
+    expect(normalizeCode(`\n\n  a<>`)).toBe(`
+      
+      a<>`);
+    expect(normalizeCode(`\n\n  <a>`)).toBe(`
+      
+      export default <a>`);
+  });
 
-  expect(
-    normalizeCode(`
-  
-  function `)
-  ).toMatchInlineSnapshot(`
-    "
+  test("normalize inline function component", () => {
+    expect(normalizeCode(`\n\n  function`)).toBe(`
       
-      export default function "
-  `)
+      function`);
 
-  expect(
-    normalizeCode(`
-  
-  function A`)
-  ).toMatchInlineSnapshot(`
-    "
+    expect(normalizeCode(`\n\n  function(`)).toBe(`
       
-      export default function A"
-  `)
+      export default function(`);
 
-  expect(
-    normalizeCode(`
-  
-  functionA`)
-  ).toMatchInlineSnapshot(`
-    "
+    expect(normalizeCode(`\n\n  function `)).toBe(`
       
-      functionA"
-  `)
-})
+      export default function `);
 
-test('normalize inline arrow function component', () => {
-  expect(
-    normalizeCode(`
-  
-  ()=>`)
-  ).toMatchInlineSnapshot(`
-    "
+    expect(normalizeCode(`\n\n  function A`)).toBe(`
       
-      export default ()=>"
-  `)
+      export default function A`);
 
-  expect(
-    normalizeCode(`
-  
-  () a`)
-  ).toMatchInlineSnapshot(`
-    "
+    expect(normalizeCode(`\n\n  functionA`)).toBe(`
       
-      export default () a"
-  `)
+      functionA`);
+  });
 
-  expect(
-    normalizeCode(`
-  
-  (a) `)
-  ).toMatchInlineSnapshot(`
-    "
+  test("normalize inline arrow function component", () => {
+    expect(normalizeCode(`\n\n  ()=>`)).toBe(`
       
-      (a) "
-  `)
+      export default ()=>`);
 
-  expect(
-    normalizeCode(`
-  
-  ()a`)
-  ).toMatchInlineSnapshot(`
-    "
+    expect(normalizeCode(`\n\n  () a`)).toBe(`
       
-      ()a"
-  `)
-})
+      export default () a`);
 
-test('normalize inline class component', () => {
-  expect(
-    normalizeCode(`
-  
-  class`)
-  ).toMatchInlineSnapshot(`
-    "
+    expect(normalizeCode(`\n\n  (a) `)).toBe(`
       
-      class"
-  `)
+      (a) `);
 
-  expect(
-    normalizeCode(`
-  
-  classA`)
-  ).toMatchInlineSnapshot(`
-    "
+    expect(normalizeCode(`\n\n  ()a`)).toBe(`
       
-      classA"
-  `)
+      ()a`);
+  });
 
-  expect(
-    normalizeCode(`
-  
-  class `)
-  ).toMatchInlineSnapshot(`
-    "
+  test("normalize inline class component", () => {
+    expect(normalizeCode(`\n\n  class`)).toBe(`
       
-      export default class "
-  `)
+      class`);
 
-  expect(
-    normalizeCode(`
-  
-  class A`)
-  ).toMatchInlineSnapshot(`
-    "
+    expect(normalizeCode(`\n\n  classA`)).toBe(`
       
-      export default class A"
-  `)
-})
+      classA`);
+
+    expect(normalizeCode(`\n\n  class `)).toBe(`
+      
+      export default class `);
+
+    expect(normalizeCode(`\n\n  class A`)).toBe(`
+      
+      export default class A`);
+  });
+});

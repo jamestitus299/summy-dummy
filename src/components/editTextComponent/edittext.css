@@ -1,111 +1,63 @@
-/* Overlay */
-.editable-popup-overlay {
-  position: fixed;
-  inset: 0;
-  backdrop-filter: blur(6px);
-  background-color: rgba(0, 0, 0, 0.25);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-}
-
-/* Card */
-.editable-popup-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 24px 28px;
+/* Container - wraps the editor */
+.inline-edit-container {
+  display: inline-block;
   width: 100%;
-  max-width: 520px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  animation: fadeIn 0.18s ease-out;
+  margin-top: 4px;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Header */
-.editable-popup-header {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 16px;
-}
-
-/* Textarea */
-.editable-popup-textarea {
+/* Input & Textarea shared styles */
+.inline-edit-input,
+.inline-edit-textarea {
   width: 100%;
-  height: 140px;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid #dadce0;
-  background: #fafafa;
-  font-size: 0.95rem;
-  color: #111;
-  resize: none;
-  outline: none;
-  transition: border 0.2s, background 0.2s;
-}
-
-.editable-popup-textarea:focus {
-  border-color: #3b82f6;
-  background: #ffffff;
-}
-
-/* Buttons */
-.editable-popup-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 18px;
-}
-
-.editable-popup-cancel,
-.editable-popup-save {
-  padding: 8px 18px;
-  font-size: 0.9rem;
+  background: #fafafa; /* Subtle tone instead of pure white */
+  border: 1.5px solid #d0d5dd;
+  font-size: inherit;
+  font-family: inherit;
+  padding: 8px 10px;
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  cursor: pointer;
-  transition: background 0.15s, border 0.15s;
+  outline: none;
+  resize: none;
+  line-height: 1.5;
+  color: #111827;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: border 0.2s, background 0.2s, box-shadow 0.2s;
 }
 
-.editable-popup-cancel {
-  background: #fafafa;
-  color: #374151;
+/* Focus state */
+.inline-edit-input:focus,
+.inline-edit-textarea:focus {
+  border-color: #2563eb;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); /* soft blue focus ring */
 }
 
-.editable-popup-cancel:hover {
-  background: #f3f4f6;
+/* Hover state */
+.inline-edit-input:hover,
+.inline-edit-textarea:hover {
+  border-color: #9ca3af;
 }
 
-/* Primary Save Button */
-.editable-popup-save {
-  background: #111827;
-  color: white;
-  border-color: #111827;
+/* Placeholder design */
+.inline-edit-input::placeholder,
+.inline-edit-textarea::placeholder {
+  color: #9ca3af;
+  font-style: italic;
 }
 
-.editable-popup-save:hover {
-  background: #000;
+/* Text area specific spacing */
+.inline-edit-textarea {
+  min-height: 120px; /* More room for multiline input */
+  resize: vertical; /* Allow user to resize vertically */
 }
 
-/* Display text (clickable) */
+/* Display text hover state */
 .editable-text-display {
   cursor: pointer;
-  transition: .15s;
+  padding: 2px 0;
+  transition: background-color 0.1s ease-out;
 }
 
 .editable-text-display:hover {
-  background-color: #f2f3f5;
+  background-color: #f3f4f6; /* light gray hover for inline text */
+  border-radius: 4px;
 }

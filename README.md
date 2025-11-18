@@ -34,3 +34,6 @@ code (string) - the react code to render (functional component, without import s
 scope (react components) - additional scope that the react code would need
 return_error (callback) - this return the error in the code as a string; if no error then return null 
 
+## Notes
+
+View changlog for version details

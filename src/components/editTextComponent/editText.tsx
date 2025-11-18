@@ -1,26 +1,13 @@
-import React, { useState, useRef, useEffect } from "react";
-import "./edittext.css";
+import { useState, useRef, useEffect } from "react";
 
-// type HeadingTag = "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
-// type TextElementTag =
-//   | HeadingTag
-//   | "p"
-//   | "span"
-//   | "strong"
-//   | "em"
-//   | "label"
-//   | "blockquote";
-
-type TextElementTag = keyof JSX.IntrinsicElements;
-
-
-type EditableTextProps = {
+interface EditableTextProps {
   textContent?: string;
-  elementType?: TextElementTag,
+  elementType?: keyof JSX.IntrinsicElements;
   placeholder?: string;
   tailwindStyles?: string;
   onChange?: (newText: string) => void;
-};
+  multiline?: boolean; // Optional: toggle textarea vs input
+}
 
 export default function EditableText({
   textContent = "",
@@ -28,35 +15,33 @@ export default function EditableText({
   placeholder = "Click to edit...",
   tailwindStyles = "",
   onChange,
+  multiline = false,
 }: EditableTextProps) {
   const [text, setText] = useState<string>(textContent);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [tempText, setTempText] = useState<string>(textContent);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement & HTMLInputElement>(null);
 
+  // If textContent (prop) changes externally, sync with internal state
   useEffect(() => {
     setText(textContent);
   }, [textContent]);
 
+  // Focus when entering editing mode
   useEffect(() => {
-    if (isEditing && textareaRef.current) {
-      textareaRef.current.focus();
-      textareaRef.current.select();
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
     }
   }, [isEditing]);
 
-  const handleOpen = (): void => {
-    setTempText(text);
-    setIsEditing(true);
-  };
-
-  const handleSave = (): void => {
+  const handleSave = () => {
     setText(tempText);
     setIsEditing(false);
     if (onChange) onChange(tempText);
   };
 
-  const handleCancel = (): void => {
+  const handleCancel = () => {
     setTempText(text);
     setIsEditing(false);
   };
@@ -64,52 +49,47 @@ export default function EditableText({
   const Tag: keyof JSX.IntrinsicElements = elementType;
   const displayText = text || placeholder;
 
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") handleCancel();
-      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) handleSave();
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [tempText]);
-
-
   return (
     <>
-      {/* Display Text */}
-      <Tag
-        onClick={handleOpen}
-        className={`editable-text-display ${tailwindStyles ? tailwindStyles : ""}`}
-      >
-        {displayText}
-      </Tag>
-
-      {/* Popup Modal */}
-      {isEditing && (
-        <div className="editable-popup-overlay" role="dialog" aria-modal="true">
-          <div className="editable-popup-card">
-            <h3 className="editable-popup-header">Edit Text</h3>
-
+      {isEditing ? (
+        <div className="">
+          {multiline ? (
             <textarea
-              ref={textareaRef}
+              ref={inputRef}
+              className={`${tailwindStyles} resize`}
               value={tempText}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setTempText(e.target.value)
-              }
-              rows={6}
-              className="editable-popup-textarea"
+              onChange={(e) => setTempText(e.target.value)}
+              onBlur={handleSave}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") handleCancel();
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSave();
+                }
+              }}
+              rows={4}
             />
-
-            <div className="editable-popup-buttons">
-              <button onClick={handleCancel} className="editable-popup-cancel">
-                Cancel
-              </button>
-              <button onClick={handleSave} className="editable-popup-save">
-                Save
-              </button>
-            </div>
-          </div>
+          ) : (
+            <input
+              ref={inputRef}
+              className={`${tailwindStyles}`}
+              value={tempText}
+              onChange={(e) => setTempText(e.target.value)}
+              onBlur={handleSave}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") handleCancel();
+                if (e.key === "Enter") handleSave();
+              }}
+            />
+          )}
         </div>
+      ) : (
+        <Tag
+          className={`${tailwindStyles}`}
+          onClick={() => setIsEditing(true)}
+        >
+          {displayText}
+        </Tag>
       )}
     </>
   );

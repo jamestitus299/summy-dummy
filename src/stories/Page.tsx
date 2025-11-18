@@ -4,8 +4,6 @@ import { scope } from "../scopes/Scope";
 
 import { Helmet } from "react-helmet";
 
-import EditableText from "../components/editTextComponent/editText";
-
 export const Page: React.FC = () => {
   return (
     <div>
@@ -29,65 +27,6 @@ export const Page: React.FC = () => {
           showError={true}
         />
       </div>
-
-
-      <div className="mt-10 space-y-4 max-w-3xl mx-auto">
-
-        <EditableText
-          textContent="Editable Heading"
-          elementType="h1"
-          tailwindStyles="text-4xl font-extrabold text-center p-3 rounded bg-gradient-to-r from-purple-500 to-indigo-600 text-white cursor-pointer"
-        />
-
-        <EditableText
-          textContent="Editable Subheading"
-          elementType="h2"
-          tailwindStyles="text-xl font-semibold p-2 rounded bg-blue-100 text-blue-700 border border-blue-300 cursor-pointer"
-        />
-
-        <EditableText
-          textContent="This is an editable paragraph. Click to edit this text. Use this for descriptions, instructions, documentation, etc."
-          elementType="p"
-          tailwindStyles="text-base leading-relaxed p-3 bg-gray-50 border rounded-lg shadow-sm hover:bg-gray-100 cursor-pointer"
-        />
-
-        <EditableText
-          textContent="Inline highlight text"
-          elementType="span"
-          tailwindStyles="text-sm px-2 py-1 bg-yellow-200 rounded shadow cursor-pointer inline-block"
-        />
-
-        <EditableText
-          textContent="Callout / Info Box"
-          elementType="div"
-          tailwindStyles="p-4 rounded-lg border border-indigo-300 bg-indigo-50 text-indigo-800 shadow-md cursor-pointer"
-        />
-
-        <EditableText
-          textContent="Quote text — something meaningful."
-          elementType="blockquote"
-          tailwindStyles="italic text-lg border-l-4 border-gray-400 pl-4 text-gray-600 cursor-pointer"
-        />
-
-        <EditableText
-          textContent="Button-like label"
-          elementType="button"
-          tailwindStyles="px-4 py-2 rounded-full bg-green-600 text-white text-center shadow hover:bg-green-700 cursor-pointer"
-        />
-
-        <EditableText
-          textContent="Tag / Badge"
-          elementType="span"
-          tailwindStyles="text-xs uppercase tracking-wide px-3 py-1 bg-pink-200 text-pink-800 rounded-full cursor-pointer inline-block"
-        />
-
-        <EditableText
-          textContent="Test"
-          // elementType=""
-        />
-
-      </div>
-
     </div>
   );
 };

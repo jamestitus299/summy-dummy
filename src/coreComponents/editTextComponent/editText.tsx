@@ -224,7 +224,10 @@ export default function EditableText({
   // Render when editing: IN-PLACE TEXT EDITING
   if (isEditing) {
     return (
-      <Tag className={tailwindStyles} onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+      <Tag
+        className={tailwindStyles}
+        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+      >
         {/* Input replaces ALL text nodes */}
         {multiline ? (
           <textarea

@@ -1,3 +1,3 @@
-import EditableText from "../components/editTextComponent/editText";
+import EditableText from "../coreComponents/editTextComponent/editText";
 
 export const editComponentScope = {EditableText}

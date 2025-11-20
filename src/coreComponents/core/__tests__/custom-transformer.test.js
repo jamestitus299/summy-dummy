@@ -195,6 +195,19 @@ describe("JSX Transformer Logic", () => {
 
             expect(cleanReverted).toEqual(cleanOriginal);
         });
+
+        it("should handle multiple nested tailwind css styles after transforming and reverting", () => {
+            const original = `<h2 className="text-red-400">James <h2 className="text-green-400" >Titus <h2 className="text-purple-400">h</h2></h2></h2>`;
+
+            const { transformedCode } = transformJSXTextToEditableText(original);
+            const reverted = transformEditableTextToJSX(transformedCode);
+
+            // Clean up whitespace/semicolons for comparison
+            const cleanOriginal = original.replace(/\s+/g, "");
+            const cleanReverted = reverted.replace(/;\s*$/, "").replace(/\s+/g, "");
+
+            expect(cleanReverted).toEqual(cleanOriginal);
+        });
     });
 
 

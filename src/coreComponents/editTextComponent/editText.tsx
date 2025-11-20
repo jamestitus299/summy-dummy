@@ -86,56 +86,49 @@ function concatTextNodes(nodes: RichNode[]) {
     .filter((n) => n.type === "text")
     .map((t) => (t as { type: "text"; value: string }).value)
     .join("");
-  // console.log("concat", nodes, textValue)
+  console.log("concat", nodes, textValue)
   return textValue;
 }
 
 /**
- * Distributes an edited combined text back into the original text segments.
- * We use length-proportional allocation based on original segment lengths.
- *
- * originalSegments: array of original text strings (in order)
- * newText: the single edited string (concatenation of all original text segments)
- *
- * Returns an array of strings with same length as originalSegments.
+ * Redistributes edited text back into the original text segments.
+ * 
+ * Adds the new edited text to the matching segment, while keeping
+ * other segment texts unchanged.
+ * 
+ * @param newText - The user-edited combined text.
+ * @param originalSegments - The original text segments.
+ * @returns A new array of text segments with newText added to segment 0.
  */
 function distributeTextToSegments(newText: string, originalSegments: string[]) {
-  const totalOrigLen = originalSegments.reduce((s, seg) => s + seg.length, 0);
   const n = originalSegments.length;
   if (n === 0) return [];
+  if (n === 1) return [newText];
 
-  // If all original lengths are zero (rare), put everything in first segment
-  if (totalOrigLen === 0) {
-    const out = new Array(n).fill("");
-    out[0] = newText;
-    return out;
+  const result = new Array(n).fill("");
+
+  // Find all segment markers in order
+  const indices = originalSegments.map(seg => newText.indexOf(seg));
+
+  // If any marker is missing put everything into first segment
+  if (indices.some(i => i === -1)) {
+    result[0] = newText;
+    for (let i = 1; i < n; i++) {
+      result[i] = originalSegments[i];
+    }
+    return result;
   }
 
-  const newLen = newText.length;
-  // compute allocations (rounded), ensure sum equals newLen by adjusting last
-  const allocs: number[] = originalSegments.map((seg) =>
-    Math.round((seg.length / totalOrigLen) * newLen)
-  );
+  // Build each segment properly
+  for (let i = 0; i < n; i++) {
+    const currentIndex = indices[i];
+    const nextIndex = i < n - 1 ? indices[i + 1] : newText.length;
 
-  // adjust rounding error
-  const allocatedSum = allocs.reduce((s, a) => s + a, 0);
-  let diff = newLen - allocatedSum;
-  let i = 0;
-  while (diff !== 0) {
-    allocs[i % n] = allocs[i % n] + (diff > 0 ? 1 : -1);
-    diff += diff > 0 ? -1 : 1;
-    i++;
+    // Segment text - everything between markers
+    result[i] = newText.slice(currentIndex, nextIndex);
   }
 
-  // slice newText into pieces
-  const out: string[] = [];
-  let cursor = 0;
-  for (let j = 0; j < n; j++) {
-    const len = allocs[j];
-    out.push(newText.slice(cursor, cursor + len));
-    cursor += len;
-  }
-  return out;
+  return result;
 }
 
 /**

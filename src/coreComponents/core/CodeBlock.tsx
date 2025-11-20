@@ -37,16 +37,20 @@ export const CodeBlock = ({
             theme={theme}
         >
             {({ className, style, tokens, getLineProps, getTokenProps }) => {
-                const children = tokens.map((line, i) => (
-                    <Fragment key={i}>
-                        <span {...getLineProps({ line })}>
-                            {line.map((token, key) => (
-                                <span {...getTokenProps({ token, key })} />
-                            ))}
-                        </span>
-                        {'\n'}
-                    </Fragment>
-                ))
+                const children = tokens.map((line, i) => {
+                    const { key: lineKey, ...restLineProps } = getLineProps({ line, key: i })
+                    return (
+                        <Fragment key={lineKey}>
+                            <span {...restLineProps}>
+                                {line.map((token, key) => {
+                                    const { key: tokenKey, ...restTokenProps } = getTokenProps({ token, key })
+                                    return <span key={tokenKey} {...restTokenProps} />
+                                })}
+                            </span>
+                            {'\n'}
+                        </Fragment>
+                    )
+                })
 
                 if (noWrapper) return children
 

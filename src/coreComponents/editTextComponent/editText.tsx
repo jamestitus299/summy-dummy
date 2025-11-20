@@ -52,27 +52,42 @@ function buildNodesFromChildren(
     } else if (React.isValidElement(c)) {
       // flush accumulated text before pushing element
       flushBuffer();
-      // element node: give a deterministic-ish key so we can re-render later
+
+      // Generate a key and assign it
+      const rawKey = c.key != null ? String(c.key) : null;
+      const existingKey =
+        rawKey && !rawKey.startsWith(".") ? rawKey : null;
       const key =
-        (c.key as string) ??
-        `el-${nodes.length}-${Math.random().toString(36).slice(2, 9)}`;
+        existingKey ??
+        `el-${Math.random().toString(36).slice(2, 9)}`;
+
+      // console.log({ rawKey, existingKey, finalKey: key });
       nodes.push({ type: "element", element: c, key });
-    } else {
-      // For other types (null/boolean), treat as nothing
     }
   }
   flushBuffer();
+  // console.log("nodes", nodes)
   return nodes;
 }
+
+/**
+ * Get text of a particular RichNode.
+ */
+function getTextOfRichNode(node: RichNode) {
+  return node.type === "text" ? node.value : "";
+}
+
 
 /**
  * Concatenates text nodes into a single string in order.
  */
 function concatTextNodes(nodes: RichNode[]) {
-  return nodes
+  const textValue = nodes
     .filter((n) => n.type === "text")
     .map((t) => (t as { type: "text"; value: string }).value)
     .join("");
+  // console.log("concat", nodes, textValue)
+  return textValue;
 }
 
 /**
@@ -292,5 +307,4 @@ export default function EditableText({
       )}
     </Tag>
   );
-
 }

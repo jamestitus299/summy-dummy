@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 
 interface EditableTextProps {
-  textContent?: string; // fallback when no children present
+  textContent?: string;
   elementType?: keyof JSX.IntrinsicElements;
   placeholder?: string;
   tailwindStyles?: string;
@@ -20,8 +20,7 @@ type RichNode =
   | { type: "element"; element: React.ReactElement; key: string };
 
 /**
- * Walks React children and converts them into RichNode[] where text nodes are grouped
- * and elements are kept as separate element nodes.
+ * Walks React children and converts them into RichNode[]
  */
 function buildNodesFromChildren(
   children: React.ReactNode,
@@ -31,7 +30,8 @@ function buildNodesFromChildren(
 
   // If there are no children and fallback text exists, return a single text node
   if (arr.length === 0) {
-    if (fallbackText && fallbackText.length > 0) return [{ type: "text", value: fallbackText }];
+    if (fallbackText && fallbackText.length > 0)
+      return [{ type: "text", value: fallbackText }];
     return [];
   }
 
@@ -55,44 +55,29 @@ function buildNodesFromChildren(
 
       // Generate a key and assign it
       const rawKey = c.key != null ? String(c.key) : null;
-      const existingKey =
-        rawKey && !rawKey.startsWith(".") ? rawKey : null;
-      const key =
-        existingKey ??
-        `el-${Math.random().toString(36).slice(2, 9)}`;
-
-      // console.log({ rawKey, existingKey, finalKey: key });
+      const existingKey = rawKey && !rawKey.startsWith(".") ? rawKey : null;
+      const key = existingKey ?? `el-${Math.random().toString(36).slice(2, 9)}`;
       nodes.push({ type: "element", element: c, key });
     }
   }
   flushBuffer();
-  // console.log("nodes", nodes)
   return nodes;
 }
 
 /**
- * Get text of a particular RichNode.
+ * Concatenates text nodes into a single string.
+ * (Note: This only gets text from immediate text nodes, not inside nested elements) TODO ?
  */
-function getTextOfRichNode(node: RichNode) {
-  return node.type === "text" ? node.value : "";
-}
-
-
-/**
- * Concatenates text nodes into a single string in order.
- */
-function concatTextNodes(nodes: RichNode[]) {
-  const textValue = nodes
+export function concatTextNodes(nodes: RichNode[]) {
+  return nodes
     .filter((n) => n.type === "text")
     .map((t) => (t as { type: "text"; value: string }).value)
     .join("");
-  console.log("concat", nodes, textValue)
-  return textValue;
 }
 
 /**
  * Redistributes edited text back into the original text segments.
- * 
+ *
  * Adds the new edited text to the matching segment, while keeping
  * other segment texts unchanged.
  * 
@@ -100,20 +85,19 @@ function concatTextNodes(nodes: RichNode[]) {
  * @param originalSegments - The original text segments.
  * @returns A new array of text segments with newText added to correspnding segments.
  */
-export function distributeTextToSegments(newText: string, originalSegments: string[]) {
+export function distributeTextToSegments(
+  newText: string,
+  originalSegments: string[]
+) {
   const n = originalSegments.length;
   if (n === 0) return [];
   if (n === 1) return [newText];
-
-  if (!newText) return []
+  if (!newText) return [];
 
   const result = new Array(n).fill("");
+  const indices = originalSegments.map((seg) => newText.indexOf(seg));
 
-  // Find markers
-  const indices = originalSegments.map(seg => newText.indexOf(seg));
-
-  // If any marker is missing fall back
-  if (indices.some(i => i === -1)) {
+  if (indices.some((i) => i === -1)) {
     result[0] = newText;
     for (let i = 1; i < n; i++) {
       result[i] = originalSegments[i];
@@ -121,19 +105,13 @@ export function distributeTextToSegments(newText: string, originalSegments: stri
     return result;
   }
 
-  // Segment 0: from start → before second segment
   result[0] = newText.slice(0, indices[1]);
-
-  // Segments 1..N-2
   for (let i = 1; i < n - 1; i++) {
     const start = indices[i];
     const end = indices[i + 1];
     result[i] = newText.slice(start, end);
   }
-
-  // Last segment: from last marker → end
   result[n - 1] = newText.slice(indices[n - 1]);
-
   return result;
 }
 
@@ -160,24 +138,72 @@ export default function EditableText({
   const wrapperRef = useRef<HTMLElement>(null);
   const [editWidth, setEditWidth] = useState<number | undefined>();
 
-
-  // rebuild nodes when children/textContent props change
+  // Rebuild nodes if props force a change, but be careful not to overwrite 
+  // local edits if the parent is just re-rendering.
   useEffect(() => {
-    const next = buildNodesFromChildren(children, textContent);
-    setNodes(next);
-    // if not editing, keep tempText synced to concatenated text nodes
-    if (!isEditing) setTempText(concatTextNodes(next));
+    // Only reset if not currently editing to prevent jumping cursor/state loss
+    if (!isEditing) {
+      const next = buildNodesFromChildren(children, textContent);
+      setNodes(next);
+      setTempText(concatTextNodes(next));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [children, textContent]);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus();
-      inputRef.current.select();
+      // Optional: Select all text or place cursor at end
+      // inputRef.current.select(); 
     }
   }, [isEditing]);
 
-  // start editing parent: show only concatenated text nodes
+  // Handle updates from nested children
+  const handleChildChange = (key: string, newChildValue: string) => {
+    setNodes((prevNodes) =>
+      prevNodes.map((n) => {
+        if (n.type === "element" && n.key === key) {
+          // Clone the element and FORCE the new textContent.
+          // IMPORTANT: We set `children` to undefined to ensure the child component
+          // uses `textContent` as the source of truth, effectively "saving" the state.
+          const updatedElement = React.cloneElement(n.element, {
+            textContent: newChildValue,
+            children: undefined,
+            // Also keep the original onChange in case the user passed one explicitly
+            onChange: (val: string) => {
+              handleChildChange(key, val);
+              if (n.element.props.onChange) n.element.props.onChange(val);
+            }
+          } as any);
+
+          return { ...n, element: updatedElement };
+        }
+        return n;
+      })
+    );
+  };
+
+  // Helper to render children with attached listeners
+  const renderNode = (n: RichNode, i: number) => {
+    if (n.type === "text") {
+      return <React.Fragment key={`text-${i}`}>{n.value}</React.Fragment>;
+    }
+
+    // It's an element (Nested EditableText)
+    return React.cloneElement(n.element, {
+      key: n.key,
+      // Intercept the onChange event from the child
+      onChange: (newVal: string) => {
+        handleChildChange(n.key, newVal);
+        // Trigger original prop onChange if it exists
+        if (n.element.props.onChange) {
+          n.element.props.onChange(newVal);
+        }
+      }
+    });
+  };
+
+
   const handleStartEditing = (e: React.MouseEvent) => {
     e.stopPropagation();
     setTempText(concatTextNodes(nodes));
@@ -191,23 +217,24 @@ export default function EditableText({
     setIsEditing(true);
   };
 
-
   const handleCancel = () => {
     setTempText(concatTextNodes(nodes));
     setIsEditing(false);
   };
 
   const handleSave = () => {
-    // distribute new text back into the original text nodes
     const originalTextSegments = nodes.filter(
       (n) => n.type === "text"
     ) as { type: "text"; value: string }[];
 
     if (originalTextSegments.length === 0) {
-      // no text nodes originally: convert to a single leading text node
-      const newNodes: RichNode[] = [{ type: "text", value: tempText }, ...nodes];
+      // If no text nodes existed, prepend the new text
+      const newNodes: RichNode[] = [
+        { type: "text", value: tempText },
+        ...nodes, // preserve element nodes
+      ];
       setNodes(newNodes);
-      if (onChange) onChange(tempText);
+      if (onChange) onChange(tempText); // This might need to be smarter (combine all text?)
       setIsEditing(false);
       return;
     }
@@ -217,38 +244,37 @@ export default function EditableText({
       originalTextSegments.map((s) => s.value)
     );
 
-    // rebuild nodes: replace each text segment in order with the new distributed ones
     const nextNodes: RichNode[] = [];
     let textIndex = 0;
     for (const n of nodes) {
       if (n.type === "element") {
         nextNodes.push(n);
       } else {
-        // insert a text node with the corresponding distributed text
         nextNodes.push({ type: "text", value: distributed[textIndex] ?? "" });
         textIndex++;
       }
     }
 
     setNodes(nextNodes);
+    // Combine all text (including nested elements?) or just this level?
+    // Usually just this level's text for the onChange callback:
     if (onChange) onChange(concatTextNodes(nextNodes));
     setIsEditing(false);
   };
 
-  // Render when editing: IN-PLACE TEXT EDITING
   if (isEditing) {
     return (
       <Tag
         className={tailwindStyles}
         onClick={(e: React.MouseEvent) => e.stopPropagation()}
       >
-        {/* Input replaces ALL text nodes */}
+        {/* Input for this level's text */}
         {multiline ? (
           <textarea
             ref={inputRef}
-            className={`${tailwindStyles} inline-block align-middle resize overflow-auto block`}
+            className={`${tailwindStyles} inline-block align-middle resize overflow-auto block bg-white text-black`}
             value={tempText}
-            style={{ width: editWidth }}
+            style={{ width: editWidth, minWidth: "50px" }}
             onChange={(e) => setTempText(e.target.value)}
             onBlur={handleSave}
             onKeyDown={(e) => {
@@ -258,15 +284,14 @@ export default function EditableText({
                 handleSave();
               }
             }}
-            // rows={Math.max(1, tempText.split("\n").length)}
             rows={3}
           />
         ) : (
           <input
             ref={inputRef}
-            className={`${tailwindStyles} inline-block align-middle`}
+            className={`${tailwindStyles} inline-block align-middle bg-white text-black`}
             value={tempText}
-            style={{ width: editWidth }}
+            style={{ width: editWidth, minWidth: "50px" }}
             onChange={(e) => setTempText(e.target.value)}
             onBlur={handleSave}
             onKeyDown={(e) => {
@@ -276,17 +301,16 @@ export default function EditableText({
           />
         )}
 
-        {/* Render element children (nested EditableText components) */}
+        {/* Render nested Elements (View Mode) while Parent is editing */}
+        {/* Note: We render them using the helper to ensure they keep listeners */}
         {nodes
           .filter((n) => n.type === "element")
-          .map((n) =>
-            React.cloneElement(n.element, { key: n.key })
-          )}
+          .map((n, i) => renderNode(n, i))}
       </Tag>
     );
   }
 
-  // Render when not editing: reconstruct the JSX using nodes (text nodes become raw text)
+  // Render View Mode
   return (
     <Tag
       className={`${tailwindStyles}`}
@@ -296,13 +320,7 @@ export default function EditableText({
       {nodes.length === 0 ? (
         <>{placeholder}</>
       ) : (
-        nodes.map((n, i) =>
-          n.type === "text" ? (
-            <React.Fragment key={`text-${i}`}>{n.value}</React.Fragment>
-          ) : (
-            React.cloneElement(n.element, { key: n.key })
-          )
-        )
+        nodes.map((n, i) => renderNode(n, i))
       )}
     </Tag>
   );

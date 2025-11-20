@@ -1,8 +1,14 @@
+// tests for transformer
+
+import _traverse from "@babel/traverse";
+
 import {
     transformJSXTextToEditableText,
     transformEditableTextToJSX,
     applyPatchesToAst
 } from "../custom-transformer"
+
+const traverse = _traverse.default || _traverse;
 
 describe("JSX Transformer Logic", () => {
     // ----------------------------------------------------------------
@@ -82,6 +88,41 @@ describe("JSX Transformer Logic", () => {
             expect(transformedCode).toContain('textContent={"World"}');
             expect(transformedCode).toContain('textContent={"Hello"}');
         });
+
+        it("should handle proper text_node_id creation and assignment", () => {
+            const input = `<>
+                <h2>James</h2>
+                <h2>Titus</h2>
+                <h2>h</h2>
+                </>
+            `;
+
+            const { ast } = transformJSXTextToEditableText(input);
+
+            // Extract actual text_node_id values from AST
+            const textNodeIds = [];
+
+            traverse(ast, {
+                JSXText(path) {
+                    const id = path.node.extra?.textNodeId;
+                    if (id) {
+                        textNodeIds.push(id);
+                    }
+                }
+            });
+
+            // Ensure 3 distinct IDs were generated
+            expect(textNodeIds.length).toBe(3);
+            expect(textNodeIds).toContain("text_node_1");
+            expect(textNodeIds).toContain("text_node_2");
+            expect(textNodeIds).toContain("text_node_3");
+            expect(textNodeIds).not.toContain("text_node_4");
+
+            // Ensure uniqueness
+            const unique = new Set(textNodeIds);
+            expect(unique.size).toBe(3);
+        });
+
     });
 
     // ----------------------------------------------------------------

@@ -62,7 +62,7 @@ function convertAttributes(originalAttributes) {
 }
 
 /**
- * Transform JSX text elements to <EditableText>.
+ * Transform JSX text elements to <EditableText>. Assigns `text_node_id` to textNodes.
  * @param {string} code - JSX or TSX code to be transformed.
  * @param {object} options - Optional config
  * @returns {object} - { transformedCode, ast }

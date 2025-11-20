@@ -1,4 +1,4 @@
-import { distributeTextToSegments } from "../editText";
+import { distributeTextToSegments, concatTextNodes } from "../editText";
 
 describe("distributeTextToSegments", () => {
     test("1 segment - entire text goes to the first segment", () => {
@@ -88,5 +88,79 @@ describe("distributeTextToSegments", () => {
         const text = "";
 
         expect(distributeTextToSegments(text, segs)).toEqual([]);
+    });
+});
+
+describe("concatTextNodes", () => {
+    test("returns empty string for empty array", () => {
+        expect(concatTextNodes([])).toBe("");
+    });
+
+    test("concatenates a single text node", () => {
+        const nodes = [
+            { type: "text", value: "Hello" }
+        ];
+
+        expect(concatTextNodes(nodes)).toBe("Hello");
+    });
+
+    test("concatenates multiple text nodes in order", () => {
+        const nodes = [
+            { type: "text", value: "Hello" },
+            { type: "text", value: " " },
+            { type: "text", value: "World" },
+        ];
+
+        expect(concatTextNodes(nodes)).toBe("Hello World");
+    });
+
+    test("ignores element nodes completely", () => {
+        const nodes = [
+            { type: "text", value: "Hello" },
+            { type: "element", element: "<b>ignored</b>", key: "1" },
+            { type: "text", value: "World" }
+        ];
+
+        expect(concatTextNodes(nodes)).toBe("HelloWorld");
+    });
+
+    test("handles nodes with no text nodes", () => {
+        const nodes = [
+            { type: "element", element: "<b>a</b>", key: "a" },
+            { type: "element", element: "<i>b</i>", key: "b" }
+        ];
+
+        expect(concatTextNodes(nodes)).toBe("");
+    });
+
+    test("preserves whitespace exactly as provided", () => {
+        const nodes = [
+            { type: "text", value: " Hi " },
+            { type: "text", value: "There " },
+            { type: "text", value: "  " }
+        ];
+
+        expect(concatTextNodes(nodes)).toBe(" Hi There   ");
+    });
+
+    test("ignores nested text inside element nodes", () => {
+        const nodes = [
+            { type: "text", value: "Hello" },
+            { type: "element", element: { type: "span", children: [" world"] }, key: "x" },
+            { type: "text", value: "!" }
+        ];
+
+        // only top-level text nodes count
+        expect(concatTextNodes(nodes)).toBe("Hello!");
+    });
+
+    test("works with numeric text-like values and special characters", () => {
+        const nodes = [
+            { type: "text", value: "Count: " },
+            { type: "text", value: "123" },
+            { type: "text", value: "*`!" }
+        ];
+
+        expect(concatTextNodes(nodes)).toBe("Count: 123*`!");
     });
 });

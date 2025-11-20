@@ -98,19 +98,21 @@ function concatTextNodes(nodes: RichNode[]) {
  * 
  * @param newText - The user-edited combined text.
  * @param originalSegments - The original text segments.
- * @returns A new array of text segments with newText added to segment 0.
+ * @returns A new array of text segments with newText added to correspnding segments.
  */
-function distributeTextToSegments(newText: string, originalSegments: string[]) {
+export function distributeTextToSegments(newText: string, originalSegments: string[]) {
   const n = originalSegments.length;
   if (n === 0) return [];
   if (n === 1) return [newText];
 
+  if (!newText) return []
+
   const result = new Array(n).fill("");
 
-  // Find all segment markers in order
+  // Find markers
   const indices = originalSegments.map(seg => newText.indexOf(seg));
 
-  // If any marker is missing put everything into first segment
+  // If any marker is missing fall back
   if (indices.some(i => i === -1)) {
     result[0] = newText;
     for (let i = 1; i < n; i++) {
@@ -119,14 +121,18 @@ function distributeTextToSegments(newText: string, originalSegments: string[]) {
     return result;
   }
 
-  // Build each segment properly
-  for (let i = 0; i < n; i++) {
-    const currentIndex = indices[i];
-    const nextIndex = i < n - 1 ? indices[i + 1] : newText.length;
+  // Segment 0: from start → before second segment
+  result[0] = newText.slice(0, indices[1]);
 
-    // Segment text - everything between markers
-    result[i] = newText.slice(currentIndex, nextIndex);
+  // Segments 1..N-2
+  for (let i = 1; i < n - 1; i++) {
+    const start = indices[i];
+    const end = indices[i + 1];
+    result[i] = newText.slice(start, end);
   }
+
+  // Last segment: from last marker → end
+  result[n - 1] = newText.slice(indices[n - 1]);
 
   return result;
 }

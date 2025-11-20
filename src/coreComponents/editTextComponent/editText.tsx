@@ -117,6 +117,8 @@ export function distributeTextToSegments(
 
 /**
  * EditableText Component.
+ * 
+ * Note: Currently works for two nested nodes, not more than 2.
  */
 export default function EditableText({
   textContent = "",

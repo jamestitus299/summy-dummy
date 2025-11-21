@@ -80,7 +80,7 @@ export const SEditTextCanvas: React.FC = () => {
         key={code}
         scope={scope}
         code={code}
-        showEditor={false}
+        showEditor={true}
         showError={true}
       />
     </div>

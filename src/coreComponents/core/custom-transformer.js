@@ -115,12 +115,22 @@ export function transformJSXTextToEditableText(code, options = {}) {
       // CRITICAL: Attach node_id to do the patch updates, attach the node_id to the textNode.extra
       if (!textNode.extra) textNode.extra = {};
       textNode.extra.textNodeId = textNodeId;
-      // attributes.push(
-      //   t.jsxAttribute(
-      //     t.jsxIdentifier("node_id"),
-      //     t.stringLiteral(nodeId)
-      //   )
-      // );
+
+      // attach nodeId to node
+      attributes.push(
+        t.jsxAttribute(
+          t.jsxIdentifier("nodeId"),
+          t.stringLiteral(textNodeId)
+        )
+      );
+
+      // attach custom patch dispatcher - implemented in the edit canvas state manager
+      attributes.push(
+        t.jsxAttribute(
+          t.jsxIdentifier("__applyEditableTextPatch"),
+          t.jsxExpressionContainer(t.identifier("__applyEditableTextPatch"))
+        )
+      );
 
       // Append new attributes
       attributes.push(

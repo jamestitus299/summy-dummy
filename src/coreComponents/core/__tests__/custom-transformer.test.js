@@ -123,6 +123,58 @@ describe("JSX Transformer Logic", () => {
             expect(unique.size).toBe(3);
         });
 
+        it("should attach nodeId and __applyEditableTextPatch props to EditableText", () => {
+            const input = `<h1>Hello World</h1>`;
+            const { transformedCode } = transformJSXTextToEditableText(input);
+
+            // nodeId always = text_node_X
+            expect(transformedCode).toMatch(/nodeId="text_node_\d+"/);
+
+            // patch callback binding
+            expect(transformedCode).toContain(
+                `__applyEditableTextPatch={__applyEditableTextPatch}`
+            );
+        });
+
+        it("should not swap arguments when binding __applyEditableTextPatch", () => {
+            const input = `<h1>Hello Titus</h1>`;
+            const { transformedCode } = transformJSXTextToEditableText(input);
+
+            // we only verify JSX contains correct structure
+            // EditableText receives nodeId and function separately
+            expect(transformedCode).toContain(`nodeId="text_node_`);
+            expect(transformedCode).toContain(
+                `__applyEditableTextPatch={__applyEditableTextPatch}`
+            );
+        });
+
+        it("should not inject __applyEditableTextPatch into non-target tags", () => {
+            const input = `<div>Hello</div>`;
+            const { transformedCode } = transformJSXTextToEditableText(input);
+
+            expect(transformedCode).not.toContain("__applyEditableTextPatch");
+        });
+
+        it("should preserve __applyEditableTextPatch for nested EditableText components", () => {
+            const input = `<span>Hello <p>World</p></span>`;
+            const { transformedCode } = transformJSXTextToEditableText(input);
+
+            const count = (transformedCode.match(/__applyEditableTextPatch/g) || []).length;
+
+            // Expect 4: one for span, one for p - applied as __applyEditableTextPatch={__applyEditableTextPatch} 
+            expect(count).toBe(4);
+        });
+
+        it("should preserve original attributes while adding nodeId and patch props", () => {
+            const input = `<p id="xx" data-x="y" className="text-lg">Hi</p>`;
+            const { transformedCode } = transformJSXTextToEditableText(input);
+
+            expect(transformedCode).toContain('id="xx"');
+            expect(transformedCode).toContain('data-x="y"');
+            expect(transformedCode).toContain('tailwindStyles="text-lg"');
+            expect(transformedCode).toMatch(/nodeId="text_node_\d+"/);
+            expect(transformedCode).toContain("__applyEditableTextPatch={__applyEditableTextPatch}");
+        });
     });
 
     // ----------------------------------------------------------------

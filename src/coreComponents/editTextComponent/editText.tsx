@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
-interface EditableTextProps {
+export interface EditableTextProps {
   textContent?: string;
   elementType?: keyof JSX.IntrinsicElements;
   placeholder?: string;

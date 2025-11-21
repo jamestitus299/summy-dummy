@@ -10,6 +10,7 @@
       "dom.iterable",
       "esnext"
     ],
+    "allowJs": true,
     // React specific settings
     "jsx": "preserve",
     "isolatedModules": true,

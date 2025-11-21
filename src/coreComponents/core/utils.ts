@@ -3,7 +3,7 @@ import React, { createElement, isValidElement, ReactElement } from 'react'
 import { transform, normalizeCode } from './transform'
 import { RunnerOptions, Scope } from './types'
 
-const evalCode = (code: string, scope: Scope) => {
+export const evalCode = (code: string, scope: Scope) => {
   // `default` is not allowed in `new Function`
   const { default: _, import: imports, ...rest } = scope
   const finalScope: Scope = { React, require: createRequire(imports), ...rest }
@@ -39,12 +39,12 @@ export const generateElement = (
 
 export const createRequire =
   (imports: Scope = {}) =>
-  (module: string): Scope => {
-    if (!imports.hasOwnProperty(module)) {
-      throw new Error(`Module not found: '${module}'`)
+    (module: string): Scope => {
+      if (!imports.hasOwnProperty(module)) {
+        throw new Error(`Module not found: '${module}'`)
+      }
+      return imports[module]
     }
-    return imports[module]
-  }
 
 export const importCode = (code: string, scope?: Scope) => {
   const exports: Scope = {}

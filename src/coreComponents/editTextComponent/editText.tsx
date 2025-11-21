@@ -8,6 +8,8 @@ interface EditableTextProps {
   onChange?: (newText: string) => void;
   multiline?: boolean;
   children?: React.ReactNode;
+  nodeId?: string;
+  __applyEditableTextPatch?: (id: string, text: string) => void; // necessary to apply patches - implemented in edit canvas state manager
 }
 
 /**
@@ -128,6 +130,8 @@ export default function EditableText({
   onChange,
   multiline = false,
   children,
+  nodeId,
+  __applyEditableTextPatch,
 }: EditableTextProps) {
   const Tag = elementType as React.ElementType;
 
@@ -229,6 +233,12 @@ export default function EditableText({
       (n) => n.type === "text"
     ) as { type: "text"; value: string }[];
 
+    // add text update to patches - patch dispatcher
+    if (__applyEditableTextPatch && nodeId) {
+      // console.log(tempText, nodeId)
+      __applyEditableTextPatch(nodeId, tempText);
+    }
+
     if (originalTextSegments.length === 0) {
       // If no text nodes existed, prepend the new text
       const newNodes: RichNode[] = [
@@ -236,7 +246,7 @@ export default function EditableText({
         ...nodes, // preserve element nodes
       ];
       setNodes(newNodes);
-      if (onChange) onChange(tempText); // This might need to be smarter (combine all text?)
+      if (onChange) onChange(tempText);
       setIsEditing(false);
       return;
     }
@@ -258,8 +268,6 @@ export default function EditableText({
     }
 
     setNodes(nextNodes);
-    // Combine all text (including nested elements?) or just this level?
-    // Usually just this level's text for the onChange callback:
     if (onChange) onChange(concatTextNodes(nextNodes));
     setIsEditing(false);
   };

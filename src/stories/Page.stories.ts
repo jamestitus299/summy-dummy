@@ -1,23 +1,22 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, userEvent, within } from '@storybook/test';
 
-import { Page } from './Page';
+import { SReactCanvas } from './SReactCanvas';
 
-const meta = {
-  title: 'Test Page',
-  component: Page,
+const SReactCanvasMeta = {
+  title: 'Canvas - Test',
+  component: SReactCanvas,
   parameters: {
-    // More on how to position stories at: https://storybook.js.org/docs/configure/story-layout
     layout: 'fullscreen',
   },
-} satisfies Meta<typeof Page>;
+} satisfies Meta<typeof SReactCanvas>;
 
-export default meta;
-type Story = StoryObj<typeof meta>;
+type SReactCanvasStory = StoryObj<typeof SReactCanvasMeta>;
 
-// More on component testing: https://storybook.js.org/docs/writing-tests/component-testing
-export const TestPage: Story = {
+export const ReactCanvas: SReactCanvasStory = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
   },
 };
+
+export default SReactCanvasMeta;

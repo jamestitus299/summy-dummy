@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { scope } from "../scopes/Scope";
-import EditReactCanvas from "../coreComponents/EditReactCanvas"
+import EditReactCanvas from "../coreComponents/EditReactCanvas";
 
 const defaultCode = `
 export default function SampleTextComponent() {
@@ -45,15 +45,42 @@ export default function SampleTextComponent() {
     </div>
   );
 }
-`
+`;
 
 export const SEditTextCanvas: React.FC = () => {
+  const [code, setCode] = useState(defaultCode);
+  const [inputValue, setInputValue] = useState(defaultCode);
+
+  const applyCode = () => {
+    setCode(inputValue);
+  };
+
   return (
-    <div>
+    <div className="space-y-6 p-4">
+      {/* Input box */}
+      <div className="space-y-2">
+        <label className="font-medium text-gray-700">Set Component Code:</label>
+        <textarea
+          className="w-full p-3 border border-gray-300 rounded-lg font-mono text-sm"
+          rows={10}
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+        />
+
+        <button
+          onClick={applyCode}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700"
+        >
+          Set Code
+        </button>
+      </div>
+
+      {/* The editor canvas */}
       <EditReactCanvas
+        key={code}
         scope={scope}
-        code={defaultCode}
-        showEditor={true}
+        code={code}
+        showEditor={false}
         showError={true}
       />
     </div>

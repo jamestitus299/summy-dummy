@@ -82,6 +82,7 @@ export const SEditTextCanvas: React.FC = () => {
         code={code}
         showEditor={true}
         showError={true}
+        onSaveFinalCode={(value) => console.log(value)} // callback defined by the external handler
       />
     </div>
   );

@@ -25,7 +25,7 @@ export interface ReactCanvasProps {
     showEditor?: boolean;
     showError?: boolean;
 
-    // NEW: call parent when final JSX is saved
+    // call parent when final JSX is saved - external callback
     onSaveFinalCode?: (jsxCode: string) => void;
 }
 

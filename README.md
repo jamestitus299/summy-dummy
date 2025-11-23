@@ -1,39 +1,100 @@
-# REACT-CODE-CANVAS
+# ***react-code-canvas***
 
-A React library that displays the react code and charts available in the recharts library passed to the Canvas
+A library for rendering, editing (text) plain React code.
 
-# Usage
+---
 
-`import {ReactCanvas, CheckReactCode } from 'react-code-canvas'`
+## **Installation**
 
+```bash
+npm install react-code-canvas
+# or
+yarn add react-code-canvas
+```
 
-To Render React component:
+---
 
-`<ReactCanvas
-          code={CODE}
-          showPreview={true}
-          showEditor={false}
-          showError={false}
-          scope={SCOPE}
-        />`
+## **Usage**
 
-code (string) - the react code to render (functional component, without import statement, and with export keyword)
-showPreview (boolean) - to display the render of the code or not
-showError (boolean) - to display the error message in case of an error in the code
-showEditor (boolean) - to display the editor to edit the reac t code
-scope (react components) - additional scope that the react code would need
+### **Render a React component**
 
+```tsx
+import { ReactCanvas } from "react-code-canvas";
 
-To check if the react code will render or not
-`<CheckReactCode 
-    code={CODE} 
-    scope={SCOPE} 
-    return_error={handleError} />`
+<ReactCanvas
+  code={CODE}
+  showPreview={true}
+  showEditor={false}
+  showError={true}
+  scope={SCOPE}
+/>
+```
 
-code (string) - the react code to render (functional component, without import statement, and with export keyword)
-scope (react components) - additional scope that the react code would need
-return_error (callback) - this return the error in the code as a string; if no error then return null 
+#### **Props**
 
-## Notes
+| Prop          | Type                  | Description                                                                              |
+| ------------- | --------------------- | ---------------------------------------------------------------------------------------- |
+| `code`        | `string`              | React functional component code (`export default function...`) without import statements |
+| `showPreview` | `boolean`             | Display the rendered output                                                              |
+| `showEditor`  | `boolean`             | Show the code editor                                                                     |
+| `showError`   | `boolean`             | Display runtime or compile-time errors                                                   |
+| `scope`       | `Record<string, any>` | Components, variables, and libraries available inside sandbox execution, can pass custom                   |
 
-View changlog for version details
+---
+
+### **Validate React code by rendering in the frontend but hidden**
+
+```tsx
+import { CheckReactCode } from "react-code-canvas";
+
+<CheckReactCode 
+  code={CODE}
+  scope={SCOPE}
+  returnError={handleError} // returnError?: (error: string | null) => string | null | void;
+/>
+```
+
+#### **Props**
+
+| Prop           | Type                            | Description                                         |
+| -------------- | ------------------------------- | --------------------------------------------------- |
+| `code`         | `string`                        | React code to validate                              |
+| `scope`        | `Record<string, any>`           | Additional scope values required for execution      |
+| `returnError` | `(err: string \| null) => void` | Returns a string error message (or `null` if valid) |
+
+---
+
+### **Editable React code canvas - Text**
+
+```tsx
+import { EditTextReactCanvas } from "react-code-canvas";
+
+<EditTextReactCanvas 
+  code={CODE}
+  scope={SCOPE}
+  showPreview={true}
+  showEditor={false}
+  showError={true}
+  onSaveFinalCode={func} // onSaveFinalCode?: (jsxCode: string) => void;
+/>
+```
+
+Allows text editing capabilities to react code.
+
+Note: This feature is still in development.
+
+---
+
+## **Notes**
+
+* Ensure your code is **exported** using `export default function ComponentName() {}`
+* Do **not** include `import` statements; use the `scope` prop to inject dependencies
+* Include libraries in scope: ```recharts, lucide-react, react-icons/fa```
+
+---
+
+## **Changelog**
+
+See **CHANGELOG.md** for version updates and features.
+
+---

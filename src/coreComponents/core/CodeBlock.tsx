@@ -1,6 +1,5 @@
 import React, { ComponentPropsWithoutRef, CSSProperties, Fragment } from 'react'
-import { Highlight } from 'prism-react-renderer'
-import { Prism as defaultPrism } from 'prism-react-renderer'
+import { Highlight, Prism as defaultPrism } from 'prism-react-renderer'
 
 import { Language, Theme, PrismLib } from './types'
 import defaultTheme from './defaultTheme'

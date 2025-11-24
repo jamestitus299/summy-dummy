@@ -1,7 +1,6 @@
 {
   "name": "react-code-canvas",
   "version": "4.2.0-beta.7",
-  "type": "module",
   "sideEffects": false,
   "description": "Package to run and preview React code with live editing capabilities in a browser.",
   "main": "dist/index.js",

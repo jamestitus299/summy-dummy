@@ -57,8 +57,8 @@ export default function EditReactCanvas({
         }
     }, []);
 
-    // EXPOSE A HANDLER FOR EDITABLETEXT  PATCHES
-    // EditableText uses this to report changes
+    // EXPOSE A CALLBACK HANDLER FOR EDITABLETEXT  PATCHES
+    // EditableText uses this to patch changes
     const registerPatch = useCallback((textNodeId: string, newText: string) => {
         setPatches((prev) => ({
             ...prev,
@@ -69,8 +69,8 @@ export default function EditReactCanvas({
     const finalScope = useMemo(
         () => ({
             ...defaultscope,
-            ...scope,
-            __applyEditableTextPatch: registerPatch, // expose to EditableText
+            ...(scope ?? {}),
+            __applyEditableTextPatch: registerPatch, // expose to EditableText, apply edit patches callback
         }),
         [scope, registerPatch]
     );
@@ -91,7 +91,7 @@ export default function EditReactCanvas({
         setMode("edit");
     };
 
-    // ===== HANDLE SAVE MODE =====
+    // HANDLE SAVE MODE
     const saveChanges = () => {
         if (!ast) return;
 
@@ -111,7 +111,6 @@ export default function EditReactCanvas({
 
     return (
         <div className="border rounded-lg p-4 space-y-2">
-            {/* === Buttons === */}
             <div className="flex gap-2 mb-2">
                 {mode === "view" ? (
                     <button
@@ -129,8 +128,6 @@ export default function EditReactCanvas({
                     </button>
                 )}
             </div>
-
-            {/* === Live Preview Editor === */}
             <LiveProvider code={editableCode} scope={finalScope}>
                 {showPreview && <LivePreview />}
                 {showError && <LiveError />}

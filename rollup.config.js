@@ -23,13 +23,18 @@ const storybookExclude = [
 const external = [
   "react",
   "react-dom",
-  "react-live-runner",
-  "recharts",
-  /^@radix-ui\//, // Exclude all Radix UI components
-  "class-variance-authority",
-  "clsx",
-  "lucide-react",
   "sucrase",
+  "@twind/core",
+  "@twind/preset-tailwind",
+  "lucide-react",
+  "prism-react-renderer",
+  "react-icons/fa",
+  "react-simple-code-editor",
+  "recharts",
+  "@babel/core",
+  "@babel/traverse",
+  "@babel/types",
+  "@babel/generator"
 ];
 
 const config = {
@@ -53,10 +58,12 @@ const config = {
       tsconfig: "./tsconfig.json",
       clean: true,
       exclude: storybookExclude,
-      useTsconfigDeclarationDir: true, // Add this to better handle declarations
+      useTsconfigDeclarationDir: true,
     }),
     resolve({
-      dedupe: ["sucrase"], // Ensures Rollup deduplicates imports
+      browser: true,
+      preferBuiltins: false,
+      dedupe: ["react", "react-dom"],
       extensions: [".js", ".jsx", ".ts", ".tsx", ".json"],
     }),
     commonjs(),

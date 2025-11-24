@@ -25,11 +25,11 @@ const external = [
   "react-dom",
   "react-live-runner",
   "recharts",
-  /^@radix-ui\//, // Exclude all Radix UI components
-  "class-variance-authority",
   "clsx",
   "lucide-react",
   "sucrase",
+  "react-simple-code-editor",
+  "prism-react-renderer",
 ];
 
 const config = {
@@ -38,12 +38,12 @@ const config = {
     {
       file: "dist/index.js",
       format: "cjs",
-      sourcemap: true,
+      sourcemap: false,
     },
     {
       file: "dist/index.esm.js",
       format: "esm",
-      sourcemap: true,
+      sourcemap: false,
     },
   ],
   external: external,

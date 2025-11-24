@@ -18,7 +18,7 @@ import {
 
 const TWIND_FLAG = "__TWIND_INIT__";
 
-export interface ReactCanvasProps {
+export interface EditReactCanvasProps {
     code: string;
     scope?: Record<string, any>;
     showPreview?: boolean;
@@ -36,7 +36,7 @@ export default function EditReactCanvas({
     showEditor = false,
     showError = false,
     onSaveFinalCode,
-}: ReactCanvasProps) {
+}: EditReactCanvasProps) {
     // STATE
     const [mode, setMode] = useState<"view" | "edit">("view");
     const [editableCode, setEditableCode] = useState(code);

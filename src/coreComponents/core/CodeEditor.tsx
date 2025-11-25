@@ -5,11 +5,13 @@ import React, {
     ComponentPropsWithoutRef,
     useMemo,
 } from 'react'
-import Editor from 'react-simple-code-editor'
 
 import { CodeBlock } from './CodeBlock'
 import { Language, Theme, PrismLib } from './types'
 import defaultTheme from './defaultTheme'
+import SimpleCodeEditor from 'react-simple-code-editor'
+
+const Editor = (SimpleCodeEditor as any).default || SimpleCodeEditor;
 
 type EditorProps = ComponentPropsWithoutRef<typeof Editor>
 

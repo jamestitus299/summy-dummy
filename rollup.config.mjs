@@ -34,7 +34,8 @@ const external = [
   "@babel/core",
   "@babel/traverse",
   "@babel/types",
-  "@babel/generator"
+  "@babel/generator",
+  "motion/react"
 ];
 
 const config = {

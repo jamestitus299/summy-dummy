@@ -1,7 +1,8 @@
 import { rechartsScope } from "./rechartScope";
 import { lucideScope } from "./lucidreactScope";
-import {reactIconsFaScope} from "./reactIconsScope";
-import {editComponentScope} from "./editComponentScope";
+import { reactIconsFaScope } from "./reactIconsScope";
+import { editComponentScope } from "./editComponentScope";
+import motion from "./motionScope";
 
 import React, {
   useState,
@@ -26,10 +27,11 @@ const reactScope = {
 };
 
 // Export all the components and scope needed
-export const scope = {
+export const scope: any = {
   ...reactIconsFaScope,
   ...lucideScope,
   ...rechartsScope,
   ...reactScope,
   ...editComponentScope,
+  motion, // has to be named motion - <motion.div>
 };

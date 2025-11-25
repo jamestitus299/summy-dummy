@@ -30,7 +30,7 @@ import { ReactCanvas } from "react-code-canvas";
 />
 ```
 
-##### Note: You can use a Tailwind CDN script to style.
+##### Note: You can use Tailwind CDN script to style. https://cdn.tailwindcss.com
 
 #### **Props**
 

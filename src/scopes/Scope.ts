@@ -2,7 +2,7 @@ import { rechartsScope } from "./rechartScope";
 import { lucideScope } from "./lucidreactScope";
 import { reactIconsFaScope } from "./reactIconsScope";
 import { editComponentScope } from "./editComponentScope";
-import motion from "./motionScope";
+import motion, { motionHooksComponents } from "./motionScope";
 
 import React, {
   useState,
@@ -34,4 +34,5 @@ export const scope: any = {
   ...reactScope,
   ...editComponentScope,
   motion, // has to be named motion - <motion.div>
+  ...motionHooksComponents, // motion hooks, components
 };

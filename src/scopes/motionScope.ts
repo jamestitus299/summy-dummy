@@ -1,5 +1,9 @@
 // https://motion.dev/docs/react
 
-import { motion } from "motion/react"
+
+import * as Motion from "motion/react";
+
+const { motion, ...motionHooksComponents }: any = Motion;
 
 export default motion;
+export { motionHooksComponents };

@@ -55,9 +55,9 @@ export default function ReactCanvas({
   }, [scope]);
 
   return (
-    <div id="react-code-canvas">
+    <div>
       <LiveProvider code={code} scope={finalScope}>
-        {showPreview && <LivePreview />}
+        {showPreview && <LivePreview id="react-code-canvas" />}
         {showError && <LiveError />}
         {showEditor && <LiveEditor />}
       </LiveProvider>

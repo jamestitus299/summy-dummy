@@ -1,8 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 
-import { install } from "@twind/core";
-import presetTailwind from "@twind/preset-tailwind";
-
 import { LiveProvider } from "./core/LiveProvider";
 import { LiveEditor } from "./core/LiveEditor";
 import { LiveError } from "./core/LiveError";
@@ -15,8 +12,6 @@ import {
     transformEditableTextToJSX,
     applyPatchesToAst,
 } from "../coreComponents/core/custom-transformer";
-
-const TWIND_FLAG = "__TWIND_INIT__";
 
 export interface EditReactCanvasProps {
     code: string;
@@ -47,15 +42,6 @@ export default function EditReactCanvas({
     // useEffect(() => {
     //     console.log("PATCHES UPDATED:", patches);
     // }, [patches]);
-
-    // Tailwind css - twind
-    useEffect(() => {
-        if (typeof window === "undefined") return;
-        if (!(window as any)[TWIND_FLAG]) {
-            install({ presets: [presetTailwind()] }, true);
-            (window as any)[TWIND_FLAG] = true;
-        }
-    }, []);
 
     // EXPOSE A CALLBACK HANDLER FOR EDITABLETEXT  PATCHES
     // EditableText uses this to patch changes

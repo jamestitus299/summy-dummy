@@ -24,8 +24,6 @@ const external = [
   "react",
   "react-dom",
   "sucrase",
-  "@twind/core",
-  "@twind/preset-tailwind",
   "lucide-react",
   "prism-react-renderer",
   "react-icons/fa",

@@ -1,7 +1,7 @@
 # react-code-canvas
 
 #### v 4.0.1
-This version includes `recharts, react-icons/fa, lucide-react` in the scope.
+This version includes `recharts, react-icons/fa, lucide-react` in the scope - `ReactCode, CheckReactCode`.
 
-#### v 4.2.0-beta-1
-This version includes `recharts, react-icons/fa, lucide-react` in the scope and also edit text capabilities.
+#### v 4.2.0-beta.8
+This version includes `recharts, react-icons/fa, lucide-react` in the scope and also edit text capabilities - `ReactCode, CheckReactCode, EditTextReactCanvas`.

@@ -269,6 +269,9 @@
 //     // LucideProps
 // };
 
+// https://www.npmjs.com/package/lucide-react
+// https://lucide.dev/guide/packages/lucide-react
+
 import * as LucideIcons from "lucide-react";
 
 // Create scope with only the actual components using type assertion

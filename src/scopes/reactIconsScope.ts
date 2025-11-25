@@ -13,6 +13,8 @@
 
 // export { reactIconsScope };
 
+// https://www.npmjs.com/package/react-icons
+
 import * as FaIcons from 'react-icons/fa';
 
 // Filter only actual components (functions or objects)

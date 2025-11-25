@@ -11,3 +11,6 @@ This version includes `motion/react` in the scope.
 
 #### v 4.2.0-beta.11
 Fixes related to `motion/react` scope.
+
+#### v 4.2.0-beta.12
+Removed built in tailwind engine. Use a CDN script.

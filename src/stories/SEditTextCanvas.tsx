@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { scope } from "../scopes/Scope";
 import EditReactCanvas from "../coreComponents/EditReactCanvas";
-import { Helmet } from "react-helmet";
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 
 const defaultCode = `
 export default function SampleTextComponent() {
@@ -57,37 +57,39 @@ export const SEditTextCanvas: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 p-4">
-      <Helmet>
-        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-      </Helmet>
-      {/* Input box */}
-      <div className="space-y-2">
-        <label className="font-medium text-gray-700">Set Component Code:</label>
-        <textarea
-          className="w-full p-3 border border-gray-300 rounded-lg font-mono text-sm"
-          rows={10}
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
+    <HelmetProvider>
+      <div className="space-y-6 p-4">
+        <Helmet>
+          <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        </Helmet>
+        {/* Input box */}
+        <div className="space-y-2">
+          <label className="font-medium text-gray-700">Set Component Code:</label>
+          <textarea
+            className="w-full p-3 border border-gray-300 rounded-lg font-mono text-sm"
+            rows={10}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+          />
+
+          <button
+            onClick={applyCode}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700"
+          >
+            Set Code
+          </button>
+        </div>
+
+        {/* The editor canvas */}
+        <EditReactCanvas
+          key={code}
+          scope={scope}
+          code={code}
+          showEditor={true}
+          showError={true}
+          onSaveFinalCode={(value) => console.log(value)} // callback defined by the external handler
         />
-
-        <button
-          onClick={applyCode}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700"
-        >
-          Set Code
-        </button>
       </div>
-
-      {/* The editor canvas */}
-      <EditReactCanvas
-        key={code}
-        scope={scope}
-        code={code}
-        showEditor={true}
-        showError={true}
-        onSaveFinalCode={(value) => console.log(value)} // callback defined by the external handler
-      />
-    </div>
+    </HelmetProvider>
   );
 };

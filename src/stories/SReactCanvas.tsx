@@ -1,11 +1,11 @@
 import React from "react";
 import ReactCanvas from "../coreComponents/ReactCanvas";
 import { scope } from "../scopes/Scope";
-import { Helmet } from "react-helmet";
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 
 export const SReactCanvas: React.FC = () => {
     return (
-        <div>
+        <HelmetProvider>
             <Helmet>
                 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
             </Helmet>
@@ -15,7 +15,7 @@ export const SReactCanvas: React.FC = () => {
                 showEditor={true}
                 showError={true}
             />
-        </div>
+        </HelmetProvider>
 
     );
 };

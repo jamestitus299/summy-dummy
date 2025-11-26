@@ -1,11 +1,9 @@
-import * as parser from "@babel/parser";
-import _traverse from "@babel/traverse";
-import _generator from "@babel/generator";
-import * as t from "@babel/types";
+import * as Babel from "@babel/standalone";
 
-// Handle ESM/CommonJS interop for traverse and generator
-const traverse = _traverse.default || _traverse;
-const generator = _generator.default || _generator;
+const parser = Babel.packages.parser
+const traverse = Babel.packages.traverse.default
+const generator = Babel.packages.generator.default
+const t = Babel.packages.types;
 
 /** Decode \uXXXX to unicode characters */
 function decodeUnicodeEscape(text) {

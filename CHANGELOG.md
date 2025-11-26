@@ -20,3 +20,6 @@ Removed built in tailwind engine. Use a CDN script.
 
 #### v 4.2.0-beta.14
 Changed to `@babel/standalone`. Added `react-helmet-async` to scope.
+
+#### v 4.2.0-beta.15
+Fixes related to `@babel/standalone`.

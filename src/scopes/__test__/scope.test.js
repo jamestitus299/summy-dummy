@@ -46,4 +46,9 @@ describe("scope object", () => {
         expect(scope.EditableText).toBeDefined();
     });
 
+    test("contains Helmet-async", () => {
+        expect(scope.Helmet).toBeDefined();
+        expect(scope.HelmetProvider).toBeDefined();
+    });
+
 });

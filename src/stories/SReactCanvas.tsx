@@ -7,7 +7,7 @@ export const SReactCanvas: React.FC = () => {
     return (
         <HelmetProvider>
             <Helmet>
-                <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+                <script src="https://cdn.tailwindcss.com"></script>
             </Helmet>
             <ReactCanvas
                 scope={scope}

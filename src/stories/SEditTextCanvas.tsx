@@ -60,7 +60,7 @@ export const SEditTextCanvas: React.FC = () => {
     <HelmetProvider>
       <div className="space-y-6 p-4">
         <Helmet>
-          <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+          <script src="https://cdn.tailwindcss.com"></script>
         </Helmet>
         {/* Input box */}
         <div className="space-y-2">

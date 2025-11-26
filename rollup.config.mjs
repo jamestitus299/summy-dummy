@@ -29,13 +29,15 @@ const external = [
   "react-icons/fa",
   "react-simple-code-editor",
   "recharts",
-  "@babel/core",
+  "@babel/standalone",
+  "@babel/parser",
   "@babel/traverse",
   "@babel/types",
   "@babel/generator",
   "motion/react",
   "@emotion/react",
-  "@emotion/is-prop-valid"
+  "@emotion/is-prop-valid",
+  "react-helmet-async",
 ];
 
 const config = {

@@ -17,3 +17,6 @@ Removed built in tailwind engine. Use a CDN script.
 
 #### v 4.2.0-beta.13
 `EditTextReactCanvas` edit mode is set by default.
+
+#### v 4.2.0-beta.14
+Changed to `@babel/standalone`. Added `react-helmet-async` to scope.

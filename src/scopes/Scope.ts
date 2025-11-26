@@ -3,6 +3,7 @@ import { lucideScope } from "./lucidreactScope";
 import { reactIconsFaScope } from "./reactIconsScope";
 import { editComponentScope } from "./editComponentScope";
 import motion, { motionHooksComponents } from "./motionScope";
+import helmetScope from "./helmetScope"
 
 import React, {
   useState,
@@ -35,4 +36,5 @@ export const scope: any = {
   ...editComponentScope,
   motion, // has to be named motion - <motion.div>
   ...motionHooksComponents, // motion hooks, components
+  ...helmetScope,
 };

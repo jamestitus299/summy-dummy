@@ -33,7 +33,9 @@ const external = [
   "@babel/traverse",
   "@babel/types",
   "@babel/generator",
-  "motion/react"
+  "motion/react",
+  "@emotion/react",
+  "@emotion/is-prop-valid"
 ];
 
 const config = {

@@ -14,3 +14,6 @@ Fixes related to `motion/react` scope.
 
 #### v 4.2.0-beta.12
 Removed built in tailwind engine. Use a CDN script.
+
+#### v 4.2.0-beta.13
+`EditTextReactCanvas` edit mode is set by default.

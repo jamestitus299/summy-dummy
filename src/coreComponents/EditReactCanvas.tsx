@@ -32,8 +32,7 @@ export default function EditReactCanvas({
     showError = false,
     onSaveFinalCode,
 }: EditReactCanvasProps) {
-    // STATE
-    const [mode, setMode] = useState<"view" | "edit">("view");
+    const [mode, setMode] = useState<"view" | "edit">("edit");
     const [editableCode, setEditableCode] = useState(code);
     const [ast, setAst] = useState<any>(null);
     const [patches, setPatches] = useState<Record<string, string>>({});
@@ -43,7 +42,7 @@ export default function EditReactCanvas({
     //     console.log("PATCHES UPDATED:", patches);
     // }, [patches]);
 
-    // EXPOSE A CALLBACK HANDLER FOR EDITABLETEXT  PATCHES
+    // expose a callback for edittext patches
     // EditableText uses this to patch changes
     const registerPatch = useCallback((textNodeId: string, newText: string) => {
         setPatches((prev) => ({
@@ -51,6 +50,13 @@ export default function EditReactCanvas({
             [textNodeId]: newText,
         }));
     }, []);
+
+    // save whenever patches change
+    useEffect(() => {
+        if (mode === "edit" && Object.keys(patches).length > 0) {
+            saveChanges();
+        }
+    }, [patches]);
 
     const finalScope = useMemo(
         () => ({
@@ -61,7 +67,7 @@ export default function EditReactCanvas({
         [scope, registerPatch]
     );
 
-    // HANDLE EDIT MODE
+    // set up edit mode
     const startEditing = () => {
         // console.log(code)
         //@ts-ignore
@@ -77,7 +83,13 @@ export default function EditReactCanvas({
         setMode("edit");
     };
 
-    // HANDLE SAVE MODE
+    // Start edit mode on mount - edit mode by default
+    useEffect(() => {
+        startEditing();
+    }, []);
+
+
+    // handle changes on save - apply patches
     const saveChanges = () => {
         if (!ast) return;
 
@@ -87,35 +99,14 @@ export default function EditReactCanvas({
         // Convert EditableText JSX back to plain JSX
         const cleanJsx = transformEditableTextToJSX(patchedCode);
 
-        // Update editor
-        setEditableCode(cleanJsx);
-        setMode("view");
-
         // final code save callback - ext
         if (onSaveFinalCode) onSaveFinalCode(cleanJsx);
     };
 
     return (
-        <div className="border rounded-lg p-4 space-y-2">
-            <div className="flex gap-2 mb-2">
-                {mode === "view" ? (
-                    <button
-                        className="px-3 py-1 bg-blue-500 text-white rounded"
-                        onClick={startEditing}
-                    >
-                        Edit
-                    </button>
-                ) : (
-                    <button
-                        className="px-3 py-1 bg-green-600 text-white rounded"
-                        onClick={saveChanges}
-                    >
-                        Save
-                    </button>
-                )}
-            </div>
+        <div>
             <LiveProvider code={editableCode} scope={finalScope}>
-                {showPreview && <LivePreview />}
+                {showPreview && <LivePreview id="react-code-canas-edit-text" />}
                 {showError && <LiveError />}
                 {showEditor && <LiveEditor />}
             </LiveProvider>

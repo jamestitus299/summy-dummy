@@ -12,15 +12,16 @@ const originalCode = `
 </>
 `;
 
-console.log("--- Original Code ---------------------------------------------------")
-console.log(originalCode)
-
 // Transform to EditableText
-const { transformedCode, ast } = transformJSXTextToEditableText(originalCode);
-
-console.log("--- Transformed Code (Client Side) ----------------------------------")
-console.log(transformedCode);
-
+var { transformedCode, ast, error } = transformJSXTextToEditableText(originalCode);
+if (error) {
+    console.log("Error in transformJSXTextToEditableText: " + error)
+} else {
+    console.log("--- Original Code ---------------------------------------------------")
+    console.log(originalCode)
+    console.log("--- Transformed Code (Client Side) ----------------------------------")
+    console.log(transformedCode);
+}
 
 // PATCH UPDATES
 // Simulate the user editing the text on the frontend
@@ -31,17 +32,22 @@ const patches = {
 };
 
 // Apply changes to the AST.
-// Third argument 'false' means "Keep it as <EditableText>" (useful for previewing updates)
-const patchedEditableCode = applyPatchesToAst(ast, patches);
+var { transformedCode, error } = applyPatchesToAst(ast, patches);
+if (error) {
+    console.log("Error in apply patch: " + error)
+}
+else {
+    console.log("--- Patched code --------------------------------------------------")
+    console.log(transformedCode);
+}
 
-console.log("--- Patched code --------------------------------------------------")
-console.log(patchedEditableCode);
 
-
-console.log("--- Final Conversion (Back to Clean JSX) --------------------------")
-
-// 3. Convert back to original HTML tags (h2, p, etc.)
-// We can pass the patched string from step 2 into the reverse transformer
-const finalCleanCode = transformEditableTextToJSX(patchedEditableCode);
-
-console.log(finalCleanCode);
+// Convert back to original HTML tags (h2, p, etc.)
+var { transformedCode, error } = transformEditableTextToJSX(transformedCode);
+if (error) {
+    console.log("Error in transformEditableTextToJSX: " + error)
+}
+else {
+    console.log("--- Final Conversion (Back to Clean JSX) --------------------------")
+    console.log(transformedCode);
+}

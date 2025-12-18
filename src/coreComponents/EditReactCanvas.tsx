@@ -105,7 +105,9 @@ export default function EditReactCanvas({
         var { transformedCode, error } = applyPatchesToAst(ast, patches);
         if (error) {
             if (onError) {
-                onError(error);
+                // Check if it's an Error object, otherwise cast to string
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                onError(errorMessage);
             }
             return
         }

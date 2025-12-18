@@ -175,6 +175,26 @@ describe("JSX Transformer Logic", () => {
             expect(transformedCode).toMatch(/nodeId="text_node_\d+"/);
             expect(transformedCode).toContain("__applyEditableTextPatch={__applyEditableTextPatch}");
         });
+
+        it("handle error in code", () => {
+            const input = `<>
+                        <h2>James</h2>
+                        <h2>Titus</h2
+                        <h2>h</h2>
+                        </>
+                    `;
+            const { transformedCode, error } = transformJSXTextToEditableText(input);
+            // console.log(error)
+
+            // Expect error handling
+            expect(transformedCode).toBeNull;
+            expect(error).toBeDefined();
+            // Validate specific Babel Error properties
+            // Babel errors are instances of SyntaxError and contain a 'loc' object
+            expect(error instanceof SyntaxError).toBe(true);
+            expect(error.loc).toBeDefined();
+            expect(error.loc.line).toBe(4); // Titus line
+        });
     });
 
     // ----------------------------------------------------------------
@@ -183,7 +203,7 @@ describe("JSX Transformer Logic", () => {
     describe("transformEditableTextToJSX", () => {
         it("should revert EditableText back to the original element type", () => {
             const input = `<EditableText elementType="h1" textContent={"Back to Normal"} />`;
-            const output = transformEditableTextToJSX(input);
+            const { transformedCode: output, error } = transformEditableTextToJSX(input);
 
             expect(output).toContain("<h1>Back to Normal</h1>");
             expect(output).not.toContain("EditableText");
@@ -191,7 +211,7 @@ describe("JSX Transformer Logic", () => {
 
         it("should revert tailwindStyles back to className", () => {
             const input = `<EditableText elementType="p" tailwindStyles="text-blue-500" textContent={"Styled"} />`;
-            const output = transformEditableTextToJSX(input);
+            const { transformedCode: output, error } = transformEditableTextToJSX(input);
 
             expect(output).toContain('className="text-blue-500"');
             expect(output).toMatch(/className="text-blue-500"/);
@@ -203,7 +223,7 @@ describe("JSX Transformer Logic", () => {
           Hello <b>World</b>
         </EditableText>
       `;
-            const output = transformEditableTextToJSX(input);
+            const { transformedCode: output, error } = transformEditableTextToJSX(input);
 
             expect(output).toContain("<span>");
             expect(output).toContain("<b>World</b>");
@@ -211,7 +231,7 @@ describe("JSX Transformer Logic", () => {
 
         it("should handle multiline prop (ignoring it in output)", () => {
             const input = `<EditableText elementType="p" textContent={"Long text"} multiline={true} />`;
-            const output = transformEditableTextToJSX(input);
+            const { transformedCode: output, error } = transformEditableTextToJSX(input);
 
             expect(output).toContain("<p>Long text</p>");
             expect(output).not.toContain("multiline");
@@ -226,7 +246,7 @@ describe("JSX Transformer Logic", () => {
             const original = `<h2 className="heading">Title</h2>`;
 
             const { transformedCode } = transformJSXTextToEditableText(original);
-            const reverted = transformEditableTextToJSX(transformedCode);
+            const { transformedCode: reverted, error } = transformEditableTextToJSX(transformedCode);
 
             // Clean up whitespace/semicolons for comparison
             const cleanOriginal = original.replace(/\s+/g, "");
@@ -239,7 +259,7 @@ describe("JSX Transformer Logic", () => {
             const original = `<span className="font-black">{index + 1}/{slides.length}</span>`;
 
             const { transformedCode } = transformJSXTextToEditableText(original);
-            const reverted = transformEditableTextToJSX(transformedCode);
+            const { transformedCode: reverted, error } = transformEditableTextToJSX(transformedCode);
 
             // Clean up whitespace/semicolons for comparison
             const cleanOriginal = original.replace(/\s+/g, "");
@@ -252,7 +272,7 @@ describe("JSX Transformer Logic", () => {
             const original = `<h2 className="text-red-400">James <h2 className="text-green-400" >Titus <h2 className="text-purple-400">h</h2></h2></h2>`;
 
             const { transformedCode } = transformJSXTextToEditableText(original);
-            const reverted = transformEditableTextToJSX(transformedCode);
+            const { transformedCode: reverted, error } = transformEditableTextToJSX(transformedCode);
 
             // Clean up whitespace/semicolons for comparison
             const cleanOriginal = original.replace(/\s+/g, "");
@@ -275,7 +295,7 @@ describe("JSX Transformer Logic", () => {
                 "text_node_1": "Updated Text"
             };
 
-            const patchedCode = applyPatchesToAst(ast, patches);
+            const { transformedCode: patchedCode } = applyPatchesToAst(ast, patches);
             expect(patchedCode).toContain("Updated Text");
         });
 
@@ -294,7 +314,7 @@ describe("JSX Transformer Logic", () => {
                 "text_node_2": "Oliver",
             };
 
-            const patchedCode = applyPatchesToAst(ast, patches);
+            const { transformedCode: patchedCode } = applyPatchesToAst(ast, patches);
 
             expect(patchedCode).toContain("Jimmy");
             expect(patchedCode).toContain("Oliver");
@@ -308,7 +328,7 @@ describe("JSX Transformer Logic", () => {
                 "text_node_1": "NoMatch",
             };
 
-            const output = applyPatchesToAst(ast, patches);
+            const { transformedCode: output } = applyPatchesToAst(ast, patches);
 
             // original value should remain
             expect(output).toContain("Hello");
@@ -318,7 +338,7 @@ describe("JSX Transformer Logic", () => {
             const input = `<h2>Hello World</h2>`;
             const { ast } = transformJSXTextToEditableText(input);
 
-            const output = applyPatchesToAst(ast, {});
+            const { transformedCode: output } = applyPatchesToAst(ast, {});
 
             expect(output).toContain("Hello World");
         });
@@ -327,8 +347,8 @@ describe("JSX Transformer Logic", () => {
             const input = `<h2 className="title">James</h2>`;
             const { ast } = transformJSXTextToEditableText(input);
 
-            const patched = applyPatchesToAst(ast, { "text_node_1": "Updated!" });
-            const reversed = transformEditableTextToJSX(patched);
+            const { transformedCode: patched } = applyPatchesToAst(ast, { "text_node_1": "Updated!" });
+            const { transformedCode: reversed } = transformEditableTextToJSX(patched);
 
             expect(reversed).toContain("<h2");
             expect(reversed).toContain("Updated!");
@@ -359,7 +379,7 @@ describe("End-to-End Patching Flow", () => {
             text_node_3: "**ddf**"
         };
 
-        const patchedEditableCode = applyPatchesToAst(ast, patches);
+        const { transformedCode: patchedEditableCode } = applyPatchesToAst(ast, patches);
 
         // Expect patched code to contain new updated text
         expect(patchedEditableCode).toContain("Jimmy");
@@ -367,7 +387,7 @@ describe("End-to-End Patching Flow", () => {
         expect(patchedEditableCode).toContain("**ddf**");
 
         // Step 3 — reverse transform back to clean JSX
-        const finalCleanCode = transformEditableTextToJSX(patchedEditableCode);
+        const { transformedCode: finalCleanCode, } = transformEditableTextToJSX(patchedEditableCode);
 
         // Validate output
         expect(finalCleanCode).toContain("<h2>Jimmy</h2>");

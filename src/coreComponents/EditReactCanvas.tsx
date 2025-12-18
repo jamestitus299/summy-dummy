@@ -22,6 +22,7 @@ export interface EditReactCanvasProps {
 
     // call parent when final JSX is saved - external callback
     onSaveFinalCode?: (jsxCode: string) => void;
+    onError?: (error: string) => void;
 }
 
 export default function EditReactCanvas({
@@ -31,6 +32,7 @@ export default function EditReactCanvas({
     showEditor = false,
     showError = false,
     onSaveFinalCode,
+    onError,
 }: EditReactCanvasProps) {
     const [mode, setMode] = useState<"view" | "edit">("edit");
     const [editableCode, setEditableCode] = useState(code);
@@ -71,14 +73,19 @@ export default function EditReactCanvas({
     const startEditing = () => {
         // console.log(code)
         //@ts-ignore
-        const { transformedCode, ast: parsedAst } =
-            transformJSXTextToEditableText(code);
-
+        const { transformedCode, ast, error } = transformJSXTextToEditableText(code);
+        // if error - onError callback if exist, return
+        if (error) {
+            if (onError) {
+                onError(error);
+            }
+            return
+        }
         // console.log(transformedCode)
         // console.log(ast)
 
         setEditableCode(transformedCode);
-        setAst(parsedAst);
+        setAst(ast);
         setPatches({});
         setMode("edit");
     };
@@ -94,13 +101,27 @@ export default function EditReactCanvas({
         if (!ast) return;
 
         // Apply patches to the stored AST
-        const patchedCode = applyPatchesToAst(ast, patches);
+        //@ts-ignore
+        var { transformedCode, error } = applyPatchesToAst(ast, patches);
+        if (error) {
+            if (onError) {
+                onError(error);
+            }
+            return
+        }
 
         // Convert EditableText JSX back to plain JSX
-        const cleanJsx = transformEditableTextToJSX(patchedCode);
+        //@ts-ignore
+        var { transformedCode, error } = transformEditableTextToJSX(transformedCode);
+        if (error) {
+            if (onError) {
+                onError(error);
+            }
+            return
+        }
 
         // final code save callback - ext
-        if (onSaveFinalCode) onSaveFinalCode(cleanJsx);
+        if (onSaveFinalCode) onSaveFinalCode(transformedCode);
     };
 
     return (

@@ -78,6 +78,7 @@ import { EditTextReactCanvas } from "react-code-canvas";
   showEditor={false}
   showError={true}
   onSaveFinalCode={func} // onSaveFinalCode?: (jsxCode: string) => void;
+  onError={func} // onError?: (error: string) => void;
 />
 ```
 

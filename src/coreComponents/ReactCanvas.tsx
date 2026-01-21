@@ -32,7 +32,7 @@ export default function ReactCanvas({
     <div>
       <LiveProvider code={code} scope={finalScope}>
         {showPreview && <LivePreview id="react-code-canvas" />}
-        {showError && <LiveError />}
+        {showError && <LiveError id="react-code-error"/>}
         {showEditor && <LiveEditor />}
       </LiveProvider>
     </div>

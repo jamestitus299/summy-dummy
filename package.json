@@ -1,6 +1,7 @@
 {
   "name": "react-code-canvas",
-  "version": "4.2.0-beta.17",
+  "version": "4.2.0-beta.18",
+  "packageManager": "bun@1.3.14",
   "sideEffects": false,
   "description": "Package to run and preview React code with live editing capabilities in the browser.",
   "main": "dist/index.js",
@@ -12,7 +13,7 @@
     "dev": "storybook dev -p 6006",
     "build": "rollup -c",
     "size": "size-limit",
-    "prepare": "npm run build",
+    "prepare": "bun run build",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "test": "jest"
@@ -93,12 +94,13 @@
     "code-editor"
   ],
   "author": "James Titus",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jamestitus299/summy-dummy.git"
+    "url": "https://github.com/jamestitus299/react-code-canvas.git"
   },
   "bugs": {
-    "url": "https://github.com/jamestitus299/summy-dummy.git/issues"
+    "url": "https://github.com/jamestitus299/react-code-canvas.git/issues"
   },
-  "homepage": "https://github.com/jamestitus299/summy-dummy.git#readme"
+  "homepage": "https://github.com/jamestitus299/react-code-canvas.git#readme"
 }

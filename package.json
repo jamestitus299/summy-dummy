@@ -3,7 +3,7 @@
   "version": "4.2.0-beta.18",
   "packageManager": "bun@1.3.14",
   "sideEffects": false,
-  "description": "A canvas for rendering and editing React UI.",
+  "description": "A browser-based canvas for rendering React components and editing text content live.",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "files": [

@@ -1,6 +1,10 @@
 # react-code-canvas
 
-A React library for rendering, validating, and editing plain React component code in the browser.
+<p align="center">
+  <img src="./public/rrc.png" alt="react-code-canvas preview" width="160" height="160" />
+</p>
+
+A browser-based canvas for rendering React components and editing text content live.
 
 `react-code-canvas` is useful when you need to preview JSX from strings, expose a scoped set of components or libraries, or validate generated React code before saving it.
 

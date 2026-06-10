@@ -27,21 +27,21 @@ body:
     validations:
       required: true
 
-  - type: dropdown
-    id: area
-    attributes:
-      label: Area
-      options:
-        - ReactCanvas
-        - CheckReactCode
-        - EditTextReactCanvas
-        - Scope/dependencies
-        - Build/package output
-        - Documentation
-        - Developer experience
-        - Other
-    validations:
-      required: true
+  # - type: dropdown
+  #   id: area
+  #   attributes:
+  #     label: Area
+  #     options:
+  #       - ReactCanvas
+  #       - CheckReactCode
+  #       - EditTextReactCanvas
+  #       - Scope/dependencies
+  #       - Build/package output
+  #       - Documentation
+  #       - Developer experience
+  #       - Other
+  #   validations:
+  #     required: true
 
   - type: textarea
     id: alternatives

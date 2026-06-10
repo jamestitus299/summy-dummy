@@ -1,5 +1,8 @@
 import type { Config } from '@docusaurus/types';
-import type { Preset } from '@docusaurus/preset-classic';
+import type {
+  Options as ClassicPresetOptions,
+  ThemeConfig as ClassicThemeConfig,
+} from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'react-code-canvas',
@@ -38,7 +41,7 @@ const config: Config = {
         theme: {
           customCss: './src/css/custom.css',
         },
-      } satisfies Preset.Options,
+      } satisfies ClassicPresetOptions,
     ],
   ],
 
@@ -113,7 +116,7 @@ const config: Config = {
       theme: require('prism-react-renderer').themes.github,
       darkTheme: require('prism-react-renderer').themes.dracula,
     },
-  } satisfies Preset.ThemeConfig,
+  } satisfies ClassicThemeConfig,
 };
 
 export default config;

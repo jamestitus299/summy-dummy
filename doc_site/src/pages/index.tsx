@@ -6,17 +6,17 @@ import styles from './index.module.css';
 
 const features = [
   {
-    title: 'Render components',
+    title: 'Controlled rendering',
     description:
       'Turn React component code strings into browser previews with a scoped runtime.',
   },
   {
-    title: 'Validate output',
+    title: 'Validation workflow',
     description:
       'Render code invisibly and receive compile-time or runtime errors before saving.',
   },
   {
-    title: 'Edit text live',
+    title: 'Text editing path',
     description:
       'Use the editable canvas to patch text content while preserving the generated JSX.',
   },
@@ -33,7 +33,7 @@ export default function Home(): JSX.Element {
           <div className="container">
             <div className={styles.heroInner}>
               <div>
-                <p className={styles.eyebrow}>React live-code canvas</p>
+                <p className={styles.eyebrow}>React rendering toolkit</p>
                 <Heading as="h1" className={styles.title}>
                   Render React components. Edit text content live.
                 </Heading>

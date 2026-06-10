@@ -15,7 +15,8 @@
     "size": "size-limit",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "jest"
+    "test": "jest",
+    "test:manual:transformer": "bun run scripts/manual/test-custom-transformer.js"
   },
   "dependencies": {
     "@babel/standalone": "^7.28.5",

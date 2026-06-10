@@ -2,7 +2,7 @@ import {
     transformJSXTextToEditableText,
     transformEditableTextToJSX,
     applyPatchesToAst
-} from "./src/coreComponents/core/custom-transformer.js"
+} from "../../src/coreComponents/core/custom-transformer.js"
 
 const originalCode = `
 <>

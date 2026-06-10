@@ -12,6 +12,9 @@
   "scripts": {
     "dev": "storybook dev -p 6006",
     "build": "rollup -c",
+    "docs:dev": "bun --cwd doc_site start",
+    "docs:build": "bun --cwd doc_site build",
+    "docs:serve": "bun --cwd doc_site serve",
     "size": "size-limit",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",

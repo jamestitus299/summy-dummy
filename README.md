@@ -122,6 +122,15 @@ bun run size
 
 The committed lockfile is `bun.lock`. Do not commit `package-lock.json`.
 
+## Documentation Site
+
+The package documentation lives in `doc_site` and is deployed to GitHub Pages from the `master` branch.
+
+```bash
+bun run docs:dev
+bun run docs:build
+```
+
 ## Contributing
 
 Contributions are welcome. Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening an issue or pull request.

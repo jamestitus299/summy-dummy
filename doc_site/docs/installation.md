@@ -1,0 +1,51 @@
+---
+title: Installation
+description: Install react-code-canvas in a React application.
+---
+
+# Installation
+
+Install the package from npm:
+
+```bash
+npm install react-code-canvas
+```
+
+With Bun:
+
+```bash
+bun add react-code-canvas
+```
+
+With Yarn:
+
+```bash
+yarn add react-code-canvas
+```
+
+## Peer Dependencies
+
+Your app must provide React and React DOM:
+
+```json
+{
+  "react": "^18.0.0",
+  "react-dom": "^18.0.0"
+}
+```
+
+## Development From Source
+
+This repository uses Bun:
+
+```bash
+bun install --frozen-lockfile
+bun run test
+bun run build
+```
+
+Run Storybook locally:
+
+```bash
+bun run dev
+```

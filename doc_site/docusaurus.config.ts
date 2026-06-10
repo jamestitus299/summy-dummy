@@ -1,0 +1,119 @@
+import type { Config } from '@docusaurus/types';
+import type { Preset } from '@docusaurus/preset-classic';
+
+const config: Config = {
+  title: 'react-code-canvas',
+  tagline: 'Render React components and edit text content live in the browser.',
+  favicon: 'img/rrc.png',
+
+  url: 'https://jamestitus299.github.io',
+  baseUrl: '/react-code-canvas/',
+  organizationName: 'jamestitus299',
+  projectName: 'react-code-canvas',
+  trailingSlash: false,
+
+  onBrokenLinks: 'throw',
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'warn',
+    },
+  },
+
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en'],
+  },
+
+  presets: [
+    [
+      'classic',
+      {
+        docs: {
+          sidebarPath: './sidebars.ts',
+          routeBasePath: 'docs',
+          editUrl:
+            'https://github.com/jamestitus299/react-code-canvas/tree/master/doc_site/',
+        },
+        blog: false,
+        theme: {
+          customCss: './src/css/custom.css',
+        },
+      } satisfies Preset.Options,
+    ],
+  ],
+
+  themeConfig: {
+    image: 'img/rrc.png',
+    navbar: {
+      title: 'react-code-canvas',
+      logo: {
+        alt: 'react-code-canvas logo',
+        src: 'img/rrc.png',
+      },
+      items: [
+        {
+          type: 'docSidebar',
+          sidebarId: 'mainSidebar',
+          position: 'left',
+          label: 'Docs',
+        },
+        {
+          href: 'https://github.com/jamestitus299/react-code-canvas',
+          label: 'GitHub',
+          position: 'right',
+        },
+      ],
+    },
+    footer: {
+      style: 'light',
+      links: [
+        {
+          title: 'Docs',
+          items: [
+            {
+              label: 'Getting Started',
+              to: '/docs/intro',
+            },
+            {
+              label: 'Security Model',
+              to: '/docs/security',
+            },
+          ],
+        },
+        {
+          title: 'Community',
+          items: [
+            {
+              label: 'Contributing',
+              href: 'https://github.com/jamestitus299/react-code-canvas/blob/master/CONTRIBUTING.md',
+            },
+            {
+              label: 'Code of Conduct',
+              href: 'https://github.com/jamestitus299/react-code-canvas/blob/master/CODE_OF_CONDUCT.md',
+            },
+          ],
+        },
+        {
+          title: 'Package',
+          items: [
+            {
+              label: 'npm',
+              href: 'https://www.npmjs.com/package/react-code-canvas',
+            },
+            {
+              label: 'GitHub',
+              href: 'https://github.com/jamestitus299/react-code-canvas',
+            },
+          ],
+        },
+      ],
+      copyright: `Copyright © ${new Date().getFullYear()} James Titus. MIT licensed.`,
+    },
+    prism: {
+      theme: require('prism-react-renderer').themes.github,
+      darkTheme: require('prism-react-renderer').themes.dracula,
+    },
+  } satisfies Preset.ThemeConfig,
+};
+
+export default config;

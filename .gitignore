@@ -10,6 +10,7 @@ package-lock.json
 
 # build
 /dist
+/storybook-static
 /doc_site/.docusaurus
 /doc_site/build
 
@@ -26,4 +27,7 @@ yarn-error.log*
 
 *storybook.log
 
-*.html
+bundle-analysis.html
+
+# Agent
+.claude/

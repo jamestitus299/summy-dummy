@@ -36,6 +36,18 @@ import { EditTextReactCanvas } from 'react-code-canvas';
 | `showError` | `boolean` | Shows runtime or transform errors. Defaults to `false`. |
 | `onSaveFinalCode` | `(jsxCode: string) => void` | Receives updated JSX after text edits. |
 | `onError` | `(error: string) => void` | Receives transform or render errors. |
+| `persistKey` | `string` | Optional `localStorage` key. When set, the final saved JSX is persisted and restored on reload. |
+| `onCodeChange` | `(jsxCode: string) => void` | Called with the final JSX whenever it changes, alongside `onSaveFinalCode`. |
+
+## Persisting code
+
+Pass a `persistKey` to save and restore edits across reloads via `localStorage`:
+
+```tsx
+<EditTextReactCanvas code={code} persistKey="my-editable-draft" />
+```
+
+Persistence here operates on the **final saved JSX** (the clean output), not the intermediate `EditableText` representation — so a restored value transforms back into edit mode correctly. Use `onCodeChange` if you want to persist the final JSX in your own store instead.
 
 ## Status
 

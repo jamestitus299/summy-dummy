@@ -14,6 +14,7 @@ export const SReactCanvas: React.FC = () => {
                 code={""}
                 showEditor={true}
                 showError={true}
+                persistKey="dev-canvas-299"
             />
         </HelmetProvider>
 

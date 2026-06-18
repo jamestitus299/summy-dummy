@@ -49,6 +49,8 @@ You can use a Tailwind CDN script in the host app if the rendered code depends o
 | `showEditor` | `boolean` | Shows the code editor. |
 | `showError` | `boolean` | Displays runtime or compile-time errors. |
 | `scope` | `Record<string, any>` | Components, values, and libraries available to the rendered code. |
+| `persistKey` | `string` | Optional `localStorage` key. When set, edited code is saved on change and restored on reload. |
+| `onCodeChange` | `(code: string) => void` | Called whenever the code changes in the editor. Use it to persist code yourself (URL, backend, etc.). |
 
 ### Validate React Code
 
@@ -87,6 +89,8 @@ import { EditTextReactCanvas } from "react-code-canvas";
 ```
 
 `EditTextReactCanvas` adds text editing behavior to rendered React code.
+
+It also accepts `persistKey` (a `localStorage` key that saves and restores the final edited JSX across reloads) and `onCodeChange` (called with the final JSX whenever it changes, alongside `onSaveFinalCode`).
 
 This feature is still in development.
 

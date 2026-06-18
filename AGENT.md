@@ -24,6 +24,8 @@ Prop types `ReactCanvasProps`, `CheckCodeRenderProps`, `EditReactCanvasProps` ar
 
 **Contract for consumer-supplied `code`:** must `export default` a component (or call `render(...)`), must **not** contain `import` statements — dependencies are injected through the `scope` prop instead.
 
+**Code persistence:** `ReactCanvas` and `EditTextReactCanvas` accept `persistKey?: string` (saves/restores code in `localStorage`) and `onCodeChange?: (code: string) => void` (notifies on change so the host can persist however it likes). For `EditTextReactCanvas` these operate on the **final saved JSX**, not the intermediate EditableText form. `CheckReactCode` has no editor, so it intentionally has neither. Shared, SSR-safe storage helpers live in `src/coreComponents/core/storage.ts`.
+
 ## Repository structure
 
 Top-level layout (build artifacts and `node_modules` omitted):

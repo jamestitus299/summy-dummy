@@ -34,8 +34,6 @@ const config: Config = {
         docs: {
           sidebarPath: './sidebars.ts',
           routeBasePath: 'docs',
-          editUrl:
-            'https://github.com/jamestitus299/react-code-canvas/tree/master/doc_site/',
         },
         blog: false,
         theme: {
@@ -59,6 +57,11 @@ const config: Config = {
           sidebarId: 'mainSidebar',
           position: 'left',
           label: 'Docs',
+        },
+        {
+          href: 'https://github.com/jamestitus299/react-code-canvas/issues/new?template=bug_report.yml',
+          label: 'Report a Bug',
+          position: 'right',
         },
         {
           href: 'https://github.com/jamestitus299/react-code-canvas',
@@ -86,6 +89,10 @@ const config: Config = {
         {
           title: 'Community',
           items: [
+            {
+              label: 'Report a Bug',
+              href: 'https://github.com/jamestitus299/react-code-canvas/issues/new?template=bug_report.yml',
+            },
             {
               label: 'Contributing',
               href: 'https://github.com/jamestitus299/react-code-canvas/blob/master/CONTRIBUTING.md',

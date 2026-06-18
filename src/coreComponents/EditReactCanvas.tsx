@@ -6,6 +6,7 @@ import { LiveError } from "./core/LiveError";
 import { LivePreview } from "./core/LivePreview";
 
 import { scope as defaultscope } from "../scopes/Scope";
+import { readStored, writeStored } from "./core/storage";
 
 import {
     transformJSXTextToEditableText,
@@ -23,6 +24,11 @@ export interface EditReactCanvasProps {
     // call parent when final JSX is saved - external callback
     onSaveFinalCode?: (jsxCode: string) => void;
     onError?: (error: string) => void;
+
+    /** localStorage key to persist the final saved JSX across reloads; omit to disable */
+    persistKey?: string;
+    /** called whenever the final JSX changes (alongside onSaveFinalCode) */
+    onCodeChange?: (jsxCode: string) => void;
 }
 
 export default function EditReactCanvas({
@@ -33,6 +39,8 @@ export default function EditReactCanvas({
     showError = false,
     onSaveFinalCode,
     onError,
+    persistKey,
+    onCodeChange,
 }: EditReactCanvasProps) {
     const [mode, setMode] = useState<"view" | "edit">("edit");
     const [editableCode, setEditableCode] = useState(code);
@@ -71,9 +79,10 @@ export default function EditReactCanvas({
 
     // set up edit mode
     const startEditing = () => {
-        // console.log(code)
+        // Restore a previously persisted final JSX if present, else use the prop.
+        const sourceCode = readStored(persistKey) ?? code;
         //@ts-ignore
-        const { transformedCode, ast, error } = transformJSXTextToEditableText(code);
+        const { transformedCode, ast, error } = transformJSXTextToEditableText(sourceCode);
         // if error - onError callback if exist, return
         if (error) {
             if (onError) {
@@ -121,6 +130,10 @@ export default function EditReactCanvas({
             }
             return
         }
+
+        // persist the final JSX and notify listeners
+        writeStored(persistKey, transformedCode);
+        onCodeChange?.(transformedCode);
 
         // final code save callback - ext
         if (onSaveFinalCode) onSaveFinalCode(transformedCode);

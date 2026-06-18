@@ -87,6 +87,7 @@ export const SEditTextCanvas: React.FC = () => {
           code={code}
           showEditor={true}
           showError={true}
+          // persistKey="dev-edit-canvas-299" // enable for local storage persistance
           onSaveFinalCode={(value) => console.log(value)} // callback defined by the external handler
           onError={(error) => console.log(error)}
         />

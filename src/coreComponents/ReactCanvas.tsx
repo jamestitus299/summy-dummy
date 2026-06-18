@@ -13,6 +13,10 @@ export interface ReactCanvasProps {
   showPreview?: boolean;
   showEditor?: boolean;
   showError?: boolean;
+  /** localStorage key to persist edited code across page reloads; omit to disable */
+  persistKey?: string;
+  /** called whenever the code changes in the editor */
+  onCodeChange?: (code: string) => void;
 }
 
 export default function ReactCanvas({
@@ -21,6 +25,8 @@ export default function ReactCanvas({
   showPreview = true,
   showEditor = false,
   showError = false,
+  persistKey,
+  onCodeChange,
 }: ReactCanvasProps) {
 
   // Merge scopes; only depend on `scope` so memo is stable.
@@ -30,7 +36,12 @@ export default function ReactCanvas({
 
   return (
     <div>
-      <LiveProvider code={code} scope={finalScope}>
+      <LiveProvider
+        code={code}
+        scope={finalScope}
+        persistKey={persistKey}
+        onCodeChange={onCodeChange}
+      >
         {showPreview && <LivePreview id="react-code-canvas" />}
         {showError && <LiveError id="react-code-error"/>}
         {showEditor && <LiveEditor />}

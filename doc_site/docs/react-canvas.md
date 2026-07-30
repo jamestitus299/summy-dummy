@@ -30,6 +30,9 @@ import { ReactCanvas } from 'react-code-canvas';
 | `showError` | `boolean` | Shows compile-time or runtime errors. Defaults to `false`. |
 | `persistKey` | `string` | Optional `localStorage` key. When set, edited code is saved on change and restored on reload. |
 | `onCodeChange` | `(code: string) => void` | Called whenever the code changes in the editor. |
+| `showLoader` | `boolean` | Shows a full-screen overlay while non-empty code has not produced output yet. Defaults to `!showEditor`. |
+| `loader` | `React.ReactNode` | Replaces the default spinner with your own node. |
+| `onError` | `(error: string) => void` | Called when non-empty code evaluates without throwing but never renders anything. |
 
 ## Persisting code
 
@@ -57,6 +60,64 @@ const [code, setCode] = useState(() => loadFromBackend());
 ```
 
 You can use both together — `persistKey` for instant durability and `onCodeChange` to sync elsewhere.
+
+## Loading state
+
+`showLoader` renders a full-screen overlay (a spinner on a dark background) while non-empty code has not yet produced output. It hides permanently after the first successful render, so later broken edits do not bring it back.
+
+It defaults to `!showEditor`. The overlay is `position: fixed; inset: 0`, so it would cover an editor as well as the preview — with `showEditor` on you almost never want it. Pass it explicitly to override either way:
+
+```tsx
+<ReactCanvas code={code} showLoader={false} />          // never show it
+<ReactCanvas code={code} showEditor showLoader />        // show it even with an editor
+```
+
+Two cases never show the overlay:
+
+- **Empty code.** Empty or whitespace-only `code` renders nothing at all — no output, no overlay.
+- **Code that compiles and renders immediately.** Evaluation is synchronous, so a valid component resolves within the same commit and the overlay is never painted. This is deliberate: it avoids a one-frame flash on every mount.
+
+Because of that second point, the overlay is not a general "waiting for data" indicator. If you fetch code asynchronously, the wait happens while `code` is still empty, which shows nothing. Render your own placeholder during that phase:
+
+```tsx
+{isFetching ? <MySkeleton /> : <ReactCanvas code={code} />}
+```
+
+Swap the spinner for your own node with `loader`:
+
+```tsx
+<ReactCanvas code={code} loader={<MyBrandedSpinner />} />
+```
+
+## Reporting code that renders nothing
+
+Code can be valid JavaScript and still produce no component — for example if it never calls `render(...)` and has no default export. That is not a compile error, so nothing is thrown, and without `onError` it fails silently.
+
+```tsx
+<ReactCanvas
+  code={code}
+  showError
+  onError={(message) => console.warn(message)} // "Code did not render anything"
+/>;
+```
+
+This is reported synchronously, as soon as evaluation returns, and at most once per mount so editor keystrokes do not spam it. Genuine compile and runtime errors are surfaced separately through `showError` and are never replaced by this message.
+
+## Behavior on a failed edit
+
+When an edit fails to compile, the canvas keeps the previous successful render on screen and shows the error alongside it, so the preview does not blank out while you type.
+
+Restoring that previous render re-executes the previous code. Any top-level side effects in it run a second time — analytics calls, script injection, `document` mutation. Guard them if repetition matters:
+
+```jsx
+if (!document.getElementById('my-script')) {
+  // inject once
+}
+```
+
+It also means a broken keystroke costs two evaluations: the failed attempt plus a re-run of the last good code. For large components that is worth knowing when the editor feels slow.
+
+Use `CheckReactCode` instead when you only want validation — it skips this behavior and reports the error alone.
 
 ## Usage Notes
 

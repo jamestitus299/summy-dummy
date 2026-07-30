@@ -5,7 +5,7 @@ description: What react-code-canvas does and when to use it.
 
 # react-code-canvas
 
-`react-code-canvas` is a React package for rendering, validating, and text-editing React UI from code strings in the browser.
+`react-code-canvas` is a React package for rendering React UI components from code strings in the browser.
 
 Use it when your application needs to:
 

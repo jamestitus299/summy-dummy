@@ -18,18 +18,21 @@
     "dist"
   ],
   "scripts": {
-    "dev": "storybook dev -p 6006",
-    "build": "rollup -c",
-    "docs:dev": "bun --cwd doc_site start",
-    "docs:build": "bun --cwd doc_site build",
-    "docs:serve": "bun --cwd doc_site serve",
-    "size": "size-limit",
+    "dev": "bun run storybook",
+    "build": "rm -rf dist && rollup -c",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:manual:transformer": "bun run scripts/manual/test-custom-transformer.js",
+    "size": "bun run build && size-limit",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "jest",
-    "test:manual:transformer": "bun run scripts/manual/test-custom-transformer.js",
-    "clean": "rm -rf node_modules bun.lock dist .cache storybook-static",
-    "reinstall": "rm -rf node_modules bun.lock && bun install"
+    "docs:install": "bun install --cwd doc_site",
+    "docs:dev": "bun run docs:install && bun --cwd doc_site start",
+    "docs:build": "bun run docs:install && bun --cwd doc_site build",
+    "docs:serve": "bun run docs:install && bun --cwd doc_site serve",
+    "clean": "rm -rf node_modules dist .cache storybook-static coverage bundle-analysis.html doc_site/node_modules doc_site/build doc_site/.docusaurus",
+    "reinstall": "rm -rf node_modules && bun install",
+    "prepublishOnly": "bun run test && bun run build"
   },
   "dependencies": {
     "@babel/standalone": "8.0.4",

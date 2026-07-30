@@ -1,9 +1,45 @@
-import * as Babel from "@babel/standalone";
+// @babel/standalone is ~1.5MB minified and is only needed by the editable-text
+// feature (EditTextReactCanvas). Importing it statically pulled it into every
+// consumer's bundle, including ones that only use ReactCanvas. Loading it via a
+// dynamic import lets bundlers split it into a chunk fetched on demand.
+//
+// The transform functions below stay synchronous; call `loadTransformer()` once
+// before using them (EditReactCanvas awaits it on mount).
+let parser = null;
+let traverse = null;
+let generator = null;
+let t = null;
 
-const parser = Babel.packages.parser
-const traverse = Babel.packages.traverse.default
-const generator = Babel.packages.generator.default
-const t = Babel.packages.types;
+let loadPromise = null;
+
+/** Load @babel/standalone and wire up the AST helpers. Idempotent. */
+export function loadTransformer() {
+  if (t) return Promise.resolve();
+  if (!loadPromise) {
+    loadPromise = import("@babel/standalone").then((mod) => {
+      // CJS/ESM interop: bundlers may hand back the namespace or {default}.
+      const Babel = mod && mod.packages ? mod : mod.default || mod;
+      parser = Babel.packages.parser;
+      traverse = Babel.packages.traverse.default;
+      generator = Babel.packages.generator.default;
+      t = Babel.packages.types;
+    });
+  }
+  return loadPromise;
+}
+
+/** True once the Babel-backed helpers are ready. */
+export function isTransformerLoaded() {
+  return !!t;
+}
+
+function assertLoaded() {
+  if (!t) {
+    throw new Error(
+      "react-code-canvas: transformer not loaded. Await loadTransformer() first."
+    );
+  }
+}
 
 /** Decode \uXXXX to unicode characters */
 function decodeUnicodeEscape(text) {
@@ -67,6 +103,7 @@ function convertAttributes(originalAttributes) {
  */
 export function transformJSXTextToEditableText(code, options = {}) {
   try {
+    assertLoaded();
     if (!code) {
       return { transformedCode: null, ast: null, error: "No code given." };
     }
@@ -191,6 +228,7 @@ export function transformJSXTextToEditableText(code, options = {}) {
  */
 export function transformEditableTextToJSX(code) {
   try {
+    assertLoaded();
     if (!code) {
       return { transformedCode: null, error: "No code given." };
     }
@@ -304,6 +342,7 @@ export function transformEditableTextToJSX(code) {
  */
 export function applyPatchesToAst(originalAst, patches) {
   try {
+    assertLoaded();
     if (!originalAst) return { transformedCode: null, error: "No AST given to apply patches." };
 
     // Apply Text Updates

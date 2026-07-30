@@ -13,6 +13,7 @@ import {
     transformJSXTextToEditableText,
     transformEditableTextToJSX,
     applyPatchesToAst,
+    loadTransformer,
 } from "../coreComponents/core/custom-transformer";
 
 export interface EditReactCanvasProps {
@@ -116,9 +117,22 @@ export default function EditReactCanvas({
         setMode("edit");
     };
 
-    // Start edit mode on mount - edit mode by default
+    // Start edit mode on mount - edit mode by default.
+    // @babel/standalone is loaded on demand (it is ~1.5MB and only this
+    // component needs it), so wait for it before transforming.
     useEffect(() => {
-        startEditing();
+        let cancelled = false;
+        loadTransformer()
+            .then(() => {
+                if (!cancelled) startEditing();
+            })
+            .catch((err: unknown) => {
+                if (!cancelled) onError?.(err instanceof Error ? err.message : String(err));
+            });
+        return () => {
+            cancelled = true;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
 

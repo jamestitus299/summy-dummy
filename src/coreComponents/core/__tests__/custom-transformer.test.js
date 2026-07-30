@@ -5,8 +5,16 @@ import * as Babel from "@babel/standalone";
 import {
     transformJSXTextToEditableText,
     transformEditableTextToJSX,
-    applyPatchesToAst
+    applyPatchesToAst,
+    loadTransformer
 } from "../custom-transformer"
+
+// @babel/standalone is now loaded on demand so it can be code-split out of
+// bundles that only use ReactCanvas. The transform functions stay synchronous;
+// they just require the loader to have run once.
+beforeAll(async () => {
+    await loadTransformer();
+});
 
 // Use the traverse bundled in @babel/standalone, matching custom-transformer.js.
 // Importing @babel/traverse directly pulls in ESM-only `obug` (Babel 8), which

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { scope } from "../scopes/Scope";
 import EditReactCanvas from "../coreComponents/EditReactCanvas";
-import { Helmet, HelmetProvider } from 'react-helmet-async';
+import { HelmetProvider } from 'react-helmet-async';
 
 const defaultCode = `
 export default function SampleTextComponent() {
@@ -59,9 +59,6 @@ export const SEditTextCanvas: React.FC = () => {
   return (
     <HelmetProvider>
       <div className="space-y-6 p-4">
-        <Helmet>
-          <script src="https://cdn.tailwindcss.com"></script>
-        </Helmet>
         {/* Input box */}
         <div className="space-y-2">
           <label className="font-medium text-gray-700">Set Component Code:</label>

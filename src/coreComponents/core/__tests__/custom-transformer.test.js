@@ -1,6 +1,6 @@
 // tests for transformer
 
-import _traverse from "@babel/traverse";
+import * as Babel from "@babel/standalone";
 
 import {
     transformJSXTextToEditableText,
@@ -8,6 +8,10 @@ import {
     applyPatchesToAst
 } from "../custom-transformer"
 
+// Use the traverse bundled in @babel/standalone, matching custom-transformer.js.
+// Importing @babel/traverse directly pulls in ESM-only `obug` (Babel 8), which
+// Jest will not transform inside node_modules.
+const _traverse = Babel.packages.traverse;
 const traverse = _traverse.default || _traverse;
 
 describe("JSX Transformer Logic", () => {

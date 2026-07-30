@@ -5,23 +5,22 @@ description: Install react-code-canvas in a React application.
 
 # Installation
 
-Install the package from npm:
-
 ```bash
-npm install react-code-canvas
+bun add react-code-canvas@latest
 ```
 
-With Bun:
+With npm:
 
 ```bash
-bun add react-code-canvas
+npm install react-code-canvas@latest
 ```
 
 With Yarn:
 
 ```bash
-yarn add react-code-canvas
+yarn add react-code-canvas@latest
 ```
+
 
 ## Peer Dependencies
 
@@ -29,8 +28,8 @@ Your app must provide React and React DOM:
 
 ```json
 {
-  "react": "^18.0.0",
-  "react-dom": "^18.0.0"
+  "react": "^19.0.0",
+  "react-dom": "^19.0.0"
 }
 ```
 

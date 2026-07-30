@@ -11,15 +11,15 @@ A browser-based canvas for rendering React components live.
 ## Installation
 
 ```bash
-npm install react-code-canvas
+bun add react-code-canvas@latest
 ```
 
 ```bash
-yarn add react-code-canvas
+npm install react-code-canvas@latest
 ```
 
 ```bash
-bun add react-code-canvas
+yarn add react-code-canvas@latest
 ```
 
 ## Usage

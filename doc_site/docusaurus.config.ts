@@ -59,6 +59,11 @@ const config: Config = {
           label: 'Docs',
         },
         {
+          to: '/playground',
+          label: 'Playground',
+          position: 'left',
+        },
+        {
           href: 'https://github.com/jamestitus299/react-code-canvas/issues/new?template=bug_report.yml',
           label: 'Report a Bug',
           position: 'right',

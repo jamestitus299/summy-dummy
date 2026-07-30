@@ -90,7 +90,7 @@ export default function Home(): JSX.Element {
                 </p>
 
                 <div className={styles.install}>
-                  <CodeBlock language="bash">npm install react-code-canvas</CodeBlock>
+                  <CodeBlock language="bash">bun add react-code-canvas@latest</CodeBlock>
                 </div>
 
                 <div className={styles.actions}>

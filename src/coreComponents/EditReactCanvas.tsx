@@ -4,6 +4,7 @@ import { LiveProvider } from "./core/LiveProvider";
 import { LiveEditor } from "./core/LiveEditor";
 import { LiveError } from "./core/LiveError";
 import { LivePreview } from "./core/LivePreview";
+import { LiveLoadingOverlay } from "./core/LiveLoadingOverlay";
 
 import { scope as defaultscope } from "../scopes/Scope";
 import { readStored, writeStored } from "./core/storage";
@@ -29,6 +30,11 @@ export interface EditReactCanvasProps {
     persistKey?: string;
     /** called whenever the final JSX changes (alongside onSaveFinalCode) */
     onCodeChange?: (jsxCode: string) => void;
+    /** full-page overlay shown until the first successful render. Defaults to
+     * `!showEditor` -- see the same note on ReactCanvasProps.showLoader. */
+    showLoader?: boolean;
+    /** replace the default spinner overlay with a custom node */
+    loader?: React.ReactNode;
 }
 
 export default function EditReactCanvas({
@@ -41,6 +47,8 @@ export default function EditReactCanvas({
     onError,
     persistKey,
     onCodeChange,
+    showLoader = !showEditor,
+    loader,
 }: EditReactCanvasProps) {
     const [mode, setMode] = useState<"view" | "edit">("edit");
     const [editableCode, setEditableCode] = useState(code);
@@ -141,7 +149,8 @@ export default function EditReactCanvas({
 
     return (
         <div>
-            <LiveProvider code={editableCode} scope={finalScope}>
+            <LiveProvider code={editableCode} scope={finalScope} onError={onError}>
+                {showLoader && (loader ?? <LiveLoadingOverlay />)}
                 {showPreview && <LivePreview id="react-code-canas-edit-text" />}
                 {showError && <LiveError />}
                 {showEditor && <LiveEditor />}

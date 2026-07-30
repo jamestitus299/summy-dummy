@@ -40,7 +40,7 @@ export const useLiveRunner = ({
     [persistKey, onCodeChange]
   )
 
-  const { element, error } = useRunner({
+  const { element, error, hasRendered } = useRunner({
     code: transformCode ? transformCode(code) : code,
     ...rest,
   })
@@ -57,5 +57,5 @@ export const useLiveRunner = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialCode])
 
-  return { element, error, code, onChange }
+  return { element, error, code, onChange, hasRendered }
 }

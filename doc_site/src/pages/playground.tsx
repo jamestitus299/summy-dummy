@@ -1,5 +1,6 @@
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import Link from '@docusaurus/Link';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
 import styles from './playground.module.css';
@@ -65,13 +66,29 @@ function Canvas() {
 }
 
 export default function Playground(): JSX.Element {
+  const { siteConfig } = useDocusaurusContext();
+  // Injected at build time from the installed package — see readCanvasVersion()
+  // in docusaurus.config.ts.
+  const canvasVersion = siteConfig.customFields?.canvasVersion as string;
+
   return (
     <Layout
       title="Playground"
       description="Edit React component code and see react-code-canvas render it live in the browser."
     >
       <main className="container margin-vert--lg">
-        <Heading as="h1">Playground</Heading>
+        <div className={styles.titleRow}>
+          <Heading as="h1" className={styles.title}>
+            Playground
+          </Heading>
+          <Link
+            className={styles.version}
+            href={`https://www.npmjs.com/package/react-code-canvas/v/${canvasVersion}`}
+            title="Version of react-code-canvas running on this page"
+          >
+            react-code-canvas v{canvasVersion}
+          </Link>
+        </div>
         <p className={styles.intro}>
           This is <code>ReactCanvas</code> with <code>showEditor</code> and{' '}
           <code>showError</code> enabled. Edit the code on the page and the preview

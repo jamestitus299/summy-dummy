@@ -27,7 +27,9 @@ import { ReactCanvas } from 'react-code-canvas';
 | `scope` | `Record<string, React.ComponentType \| unknown>` | Values available to the rendered code. |
 | `showPreview` | `boolean` | Shows the rendered output. Defaults to `true`. |
 | `showEditor` | `boolean` | Shows the code editor. Defaults to `false`. |
-| `showError` | `boolean` | Shows compile-time or runtime errors. Defaults to `false`. |
+| `showError` | `boolean` | Shows an error toast for compile-time or runtime errors. Defaults to `false`. |
+| `errorComponent` | `React.ReactNode \| ((error: string, dismiss: () => void) => React.ReactNode)` | Replaces the built-in toast. Receives the message and a `dismiss` callback. Requires `showError`. |
+| `dismissibleError` | `boolean` | Shows a close button on the built-in toast. Defaults to `true`. |
 | `persistKey` | `string` | Optional `localStorage` key. When set, edited code is saved on change and restored on reload. |
 | `onCodeChange` | `(code: string) => void` | Called whenever the code changes in the editor. |
 | `showLoader` | `boolean` | Shows a full-screen overlay while non-empty code has not produced output yet. Defaults to `!showEditor`. |
@@ -102,6 +104,103 @@ Code can be valid JavaScript and still produce no component — for example if i
 ```
 
 This is reported synchronously, as soon as evaluation returns, and at most once per mount so editor keystrokes do not spam it. Genuine compile and runtime errors are surfaced separately through `showError` and are never replaced by this message.
+
+## Showing errors
+
+With `showError`, errors appear in a toast pinned to the top-right of the viewport. It clears itself as soon as the code compiles again, and carries a close button by default (`dismissibleError={false}` removes it). Dismissal is tracked per message, so dismissing one error does not hide a *different* one that arrives later.
+
+### Supplying your own error component
+
+`errorComponent` takes **an element or a render function** — not a component type. The render function receives the error message and a `dismiss` callback.
+
+Write an ordinary component:
+
+```tsx
+function CanvasErrorBanner({ message, onDismiss }: { message: string; onDismiss?: () => void }) {
+  return (
+    <div
+      role="alert"
+      style={{
+        position: 'fixed',
+        top: 16,
+        right: 16,
+        zIndex: 1000,
+        maxWidth: 420,
+        padding: '12px 14px',
+        borderRadius: 8,
+        border: '1px solid #fca5a5',
+        background: '#fef2f2',
+        color: '#991b1b',
+      }}
+    >
+      <strong style={{ display: 'block', marginBottom: 4 }}>Could not render</strong>
+
+      {/* Keep the message in #react-code-error if you scrape it — see the note below */}
+      <pre
+        id="react-code-error"
+        style={{ margin: 0, fontSize: 12, whiteSpace: 'pre-wrap', background: 'none', border: 'none', padding: 0 }}
+      >
+        {message}
+      </pre>
+
+      {onDismiss && (
+        <button type="button" onClick={onDismiss} aria-label="Dismiss error">
+          Dismiss
+        </button>
+      )}
+    </div>
+  );
+}
+```
+
+Then pass it as a render function. The function receives **two** arguments — the error message and a `dismiss` callback:
+
+```tsx
+<ReactCanvas
+  code={code}
+  showError
+  errorComponent={(message, dismiss) => (
+    <CanvasErrorBanner message={message} onDismiss={dismiss} />
+  )}
+/>;
+```
+
+`dismiss` is the same mechanism the built-in toast's close button uses, so a custom component gets identical behavior: dismissal is tracked per message, meaning a *different* error arriving later still surfaces, while re-renders of the same dismissed error stay hidden. Ignore the second argument if you do not want a close control, and set `dismissibleError={false}` to disable dismissal entirely — that makes `dismiss` a no-op.
+
+A static element works too when the text does not need the message — useful for a generic fallback:
+
+```tsx
+<ReactCanvas code={code} showError errorComponent={<GenericFailure />} />;
+```
+
+Any node is valid, so an existing design-system toast drops straight in:
+
+```tsx
+<ReactCanvas
+  code={code}
+  showError
+  errorComponent={(message) => <Alert severity="error">{message}</Alert>}
+/>;
+```
+
+:::danger Do not pass the component itself
+`errorComponent={CanvasErrorBanner}` looks right but fails silently. A function
+component *is* a function, so it gets called as `CanvasErrorBanner(message)` —
+with the message string where props belong. `props.message` is then `undefined`
+and you get an empty banner, with no error and no warning.
+
+```tsx
+errorComponent={CanvasErrorBanner}                                   // ❌ renders blank
+errorComponent={(message, dismiss) =>                                // ✅
+  <CanvasErrorBanner message={message} onDismiss={dismiss} />}
+```
+:::
+
+:::note Scraping the error from a headless browser
+The built-in toast puts the message in `#react-code-error`, and keeps that element statically positioned inside the fixed container on purpose: `offsetParent` is `null` for `position: fixed` elements, so a check like
+`el.offsetParent !== null && el.textContent.trim().length > 0`
+would never fire if the id sat on the fixed element. If you replace the toast via `errorComponent` and depend on that check, preserve the same arrangement.
+:::
 
 ## Behavior on a failed edit
 

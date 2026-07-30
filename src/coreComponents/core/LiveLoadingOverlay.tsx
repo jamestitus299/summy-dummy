@@ -7,6 +7,9 @@ export type LiveLoadingOverlayProps = ComponentPropsWithoutRef<'div'> & {
   spinnerColor?: string
   /** overall spinner box size in px; ~20px matches Radix UI's <Spinner size="3"> */
   spinnerSize?: number
+  /** replaces the default overlay markup. Still subject to the same visibility
+   * gate below, so a custom loader cannot get stuck on screen. */
+  render?: () => React.ReactNode
 }
 
 const LEAF_COUNT = 8
@@ -16,8 +19,11 @@ const DURATION_S = 0.8
  * Full-page overlay shown until the current code produces its first real
  * (non-null) render. Stays hidden forever after that first success, even if
  * a later code edit briefly errors — it covers the initial load only, not
- * every keystroke in the editor. Empty code renders nothing at all (same
- * "no code given" check as generateElement), not the spinner.
+ * every keystroke in the editor.
+ *
+ * Never shown when: empty code (same "no code given" check as
+ * generateElement), or an error is present (a resolved outcome — the error
+ * needs to be readable, not covered by a spinner).
  *
  * Visually matches Radix UI's <Spinner> (used as rx.spinner() in the Reflex
  * consumer apps): 8 bars radiating from center, rotated 45deg apart, each
@@ -27,11 +33,16 @@ export const LiveLoadingOverlay = ({
   style,
   spinnerColor = '#fff',
   spinnerSize = 20,
+  render,
   ...rest
 }: LiveLoadingOverlayProps) => {
-  const { hasRendered, code } = useLiveContext()
+  const { hasRendered, code, error } = useLiveContext()
 
-  if (hasRendered || !code?.trim()) return null
+  // An error is a resolved outcome, not a pending one. Without this the spinner
+  // would sit on top of the message explaining why nothing rendered.
+  if (hasRendered || error || !code?.trim()) return null
+
+  if (render) return <>{render()}</>
 
   return (
     <div

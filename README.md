@@ -47,7 +47,9 @@ You can use a Tailwind CDN script in the host app if the rendered code depends o
 | `code` | `string` | React functional component code, usually `export default function...`, without import statements. |
 | `showPreview` | `boolean` | Displays the rendered output. |
 | `showEditor` | `boolean` | Shows the code editor. |
-| `showError` | `boolean` | Displays runtime or compile-time errors. |
+| `showError` | `boolean` | Shows an error toast in the top-right of the viewport for runtime or compile-time errors. |
+| `errorComponent` | `React.ReactNode \| ((error: string, dismiss: () => void) => React.ReactNode)` | Replaces the built-in toast. Receives the message and a `dismiss` callback. Requires `showError`. |
+| `dismissibleError` | `boolean` | Shows a close button on the built-in toast. Defaults to `true`. |
 | `scope` | `Record<string, any>` | Components, values, and libraries available to the rendered code. |
 | `persistKey` | `string` | Optional `localStorage` key. When set, edited code is saved on change and restored on reload. |
 | `onCodeChange` | `(code: string) => void` | Called whenever the code changes in the editor. Use it to persist code yourself (URL, backend, etc.). |
@@ -99,6 +101,8 @@ import { EditTextReactCanvas } from "react-code-canvas";
 - Do not include import statements in rendered code. Inject dependencies through the `scope` prop.
 - Common scoped libraries include `recharts`, `lucide-react`, and `react-icons/fa`.
 - Empty or whitespace-only `code` renders nothing at all — no output and no loader.
+- The built-in error toast keeps the message in `#react-code-error`. If you replace it with `errorComponent` and rely on scraping that element (for example from a headless browser), keep the id on a statically positioned element — `offsetParent` is `null` on `position: fixed` elements.
+- `errorComponent` takes an **element or a render function**, not a component type. Passing the component itself (`errorComponent={MyToast}`) calls it with the message string in place of props, so it renders blank with no warning. Use `errorComponent={(message, dismiss) => <MyToast message={message} onDismiss={dismiss} />}` — the second argument wires your own close control to the same per-message dismissal the built-in toast uses.
 - When an edit fails to compile, `ReactCanvas` keeps the previous successful render on screen and reports the error. Doing so re-executes the previous code, so any top-level side effects in it (analytics calls, script injection, DOM mutation) run again. Guard side effects if that matters. `CheckReactCode` opts out of this and only reports the error.
 - This package evaluates provided code in the browser. Do not execute untrusted code without an additional isolation strategy appropriate for your application.
 

@@ -40,6 +40,8 @@ import { EditTextReactCanvas } from 'react-code-canvas';
 | `onCodeChange` | `(jsxCode: string) => void` | Called with the final JSX whenever it changes, alongside `onSaveFinalCode`. |
 | `showLoader` | `boolean` | Shows a full-screen overlay while non-empty code has not produced output yet. Defaults to `!showEditor`. |
 | `loader` | `React.ReactNode` | Replaces the default spinner with your own node. |
+| `errorComponent` | `React.ReactNode \| ((error: string, dismiss: () => void) => React.ReactNode)` | Replaces the built-in error toast. Receives the message and a `dismiss` callback. Requires `showError`. |
+| `dismissibleError` | `boolean` | Shows a close button on the built-in toast. Defaults to `true`. |
 
 ## Persisting code
 

@@ -1,8 +1,26 @@
+import fs from 'fs';
+import path from 'path';
 import type { Config } from '@docusaurus/types';
 import type {
   Options as ClassicPresetOptions,
   ThemeConfig as ClassicThemeConfig,
 } from '@docusaurus/preset-classic';
+
+// Read the installed canvas version straight off disk rather than importing
+// `react-code-canvas/package.json`. The package's `exports` map only exposes
+// ".", so a subpath import of package.json fails with ERR_PACKAGE_PATH_NOT_EXPORTED
+// on versions that ship that field. fs bypasses exports resolution entirely.
+function readCanvasVersion(): string {
+  try {
+    const pkgPath = path.join(
+      __dirname,
+      'node_modules/react-code-canvas/package.json'
+    );
+    return JSON.parse(fs.readFileSync(pkgPath, 'utf8')).version ?? 'unknown';
+  } catch {
+    return 'unknown';
+  }
+}
 
 const config: Config = {
   title: 'react-code-canvas',
@@ -14,6 +32,10 @@ const config: Config = {
   organizationName: 'jamestitus299',
   projectName: 'react-code-canvas',
   trailingSlash: false,
+
+  customFields: {
+    canvasVersion: readCanvasVersion(),
+  },
 
   onBrokenLinks: 'throw',
   markdown: {

@@ -35,6 +35,13 @@ export interface EditReactCanvasProps {
     showLoader?: boolean;
     /** replace the default spinner overlay with a custom node */
     loader?: React.ReactNode;
+    /** replaces the built-in error toast. Pass a node, or a function receiving
+     * the error message. Requires `showError`. */
+    errorComponent?:
+        | React.ReactNode
+        | ((error: string, dismiss: () => void) => React.ReactNode);
+    /** show a dismiss button on the built-in error toast; true by default */
+    dismissibleError?: boolean;
 }
 
 export default function EditReactCanvas({
@@ -49,6 +56,8 @@ export default function EditReactCanvas({
     onCodeChange,
     showLoader = !showEditor,
     loader,
+    errorComponent,
+    dismissibleError = true,
 }: EditReactCanvasProps) {
     const [mode, setMode] = useState<"view" | "edit">("edit");
     const [editableCode, setEditableCode] = useState(code);
@@ -147,12 +156,21 @@ export default function EditReactCanvas({
         if (onSaveFinalCode) onSaveFinalCode(transformedCode);
     };
 
+    const renderError = errorComponent
+        ? (message: string, dismiss: () => void) =>
+            typeof errorComponent === "function"
+                ? errorComponent(message, dismiss)
+                : errorComponent
+        : undefined;
+
     return (
-        <div>
+        // `relative` is kept so a caller overriding the toast via containerStyle to
+        // position:absolute anchors it to the canvas rather than the page.
+        <div style={{ position: "relative" }}>
             <LiveProvider code={editableCode} scope={finalScope} onError={onError}>
-                {showLoader && (loader ?? <LiveLoadingOverlay />)}
+                {showLoader && <LiveLoadingOverlay render={loader ? () => loader : undefined} />}
                 {showPreview && <LivePreview id="react-code-canas-edit-text" />}
-                {showError && <LiveError />}
+                {showError && <LiveError id="react-code-error" render={renderError} dismissible={dismissibleError} />}
                 {showEditor && <LiveEditor />}
             </LiveProvider>
         </div>

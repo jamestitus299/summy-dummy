@@ -37,9 +37,12 @@ describe("scope object", () => {
         expect(scope.House).toBeDefined();
     });
 
-    test("contains lucid react-icons/fa components", () => {
-        expect(scope.FaBeer).toBeDefined();
-        expect(scope.FaHeart).toBeDefined();
+    // react-icons/fa was dropped: ~424KB gzipped duplicating lucide's coverage.
+    // Pinned so it cannot creep back in unnoticed.
+    test("does NOT contain react-icons/fa components", () => {
+        expect(scope.FaBeer).toBeUndefined();
+        expect(scope.FaHeart).toBeUndefined();
+        expect(Object.keys(scope).filter((k) => /^Fa[A-Z0-9]/.test(k))).toHaveLength(0);
     });
 
     test("contains EditableText custom components", () => {

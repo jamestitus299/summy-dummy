@@ -26,7 +26,6 @@ const external = [
   "sucrase",
   "lucide-react",
   "prism-react-renderer",
-  "react-icons/fa",
   "react-simple-code-editor",
   "recharts",
   "@babel/standalone",

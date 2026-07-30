@@ -36,7 +36,11 @@ export default function Example() {
 
 ## Built-In Scope
 
-The package includes defaults for common UI and visualization libraries used by the project, including `recharts`, `lucide-react`, `react-icons/fa`, `motion/react`, and `react-helmet-async`.
+The package includes defaults for common UI and visualization libraries used by the project, including `recharts`, `lucide-react`, `motion/react`, and `react-helmet-async`.
+
+:::caution `react-icons/fa` was removed
+Up to 4.2.0-beta.18 the default scope also injected all 1611 Font Awesome icons from `react-icons/fa`. That was ~424KB gzipped — roughly half the bundle — duplicating what `lucide-react` already covers with 5673 icons. Code referencing `Fa*` names now fails with a `ReferenceError`; switch to the lucide equivalent, or re-add the icons yourself through the `scope` prop.
+:::
 
 Pass your own values to extend or override what is available.
 

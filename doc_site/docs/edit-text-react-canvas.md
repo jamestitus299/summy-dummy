@@ -55,7 +55,7 @@ Persistence here operates on the **final saved JSX** (the clean output), not the
 
 ## Loading state
 
-`showLoader` and `loader` behave exactly as in [ReactCanvas](./react-canvas.md#loading-state), including the `!showEditor` default. Note that this component transforms the incoming code before rendering it, so the overlay also covers that transform pass.
+`showLoader` and `loader` behave exactly as in [ReactCanvas](./react-canvas.md#loading-state), including the `!showEditor` default and the deferred initial evaluation that lets the loader paint. Note that this component transforms the incoming code before rendering it, so the overlay also covers that transform pass.
 
 ## Status
 

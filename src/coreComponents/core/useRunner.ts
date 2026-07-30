@@ -11,6 +11,19 @@ export type UseRunnerProps = RunnerOptions & {
    * synchronously (the condition is known the moment evaluation returns), and
    * at most once per mount so editor keystrokes don't spam it. */
   onError?: (error: string) => void
+  /** Evaluate the initial code on the next macrotask instead of during the
+   * first render.
+   *
+   * Transform + eval are synchronous, so by default the very first commit
+   * already contains the finished output and a loading state can never be
+   * painted. Deferring the first evaluation commits an empty pending state,
+   * lets the browser paint it, then evaluates — which is what makes a loader
+   * actually visible. Costs one macrotask on initial mount, so it is opt-in:
+   * only turn it on when something is actually rendered during that window.
+   *
+   * Applies to the first evaluation only. Later code changes (editor
+   * keystrokes) stay synchronous, so typing does not flash a loader. */
+  deferFirstRender?: boolean
 }
 
 export type UseRunnerReturn = {
@@ -27,6 +40,7 @@ export const useRunner = ({
   scope,
   disableCache,
   onError,
+  deferFirstRender,
 }: UseRunnerProps): UseRunnerReturn => {
   const isMountRef = useRef(true)
   const elementRef = useRef<ReactElement | null>(null)
@@ -66,15 +80,27 @@ export const useRunner = ({
     return element
   }
 
+  // Nothing to defer for empty code -- it produces no output either way.
+  const deferInitial = !!deferFirstRender && !!code?.trim()
+
   const [state, setState] = useState<Omit<UseRunnerReturn, 'hasRendered'>>(() => ({
-    element: makeRunnerElement(),
+    element: deferInitial ? null : makeRunnerElement(),
     error: null,
   }))
 
   useEffect(() => {
     if (isMountRef.current) {
       isMountRef.current = false
-      return
+      if (!deferInitial) return
+
+      // setTimeout rather than requestAnimationFrame: rAF never fires in a
+      // hidden/background tab, which would leave the canvas permanently blank.
+      // A macrotask yields to the browser so the pending commit gets painted.
+      const timer = setTimeout(
+        () => setState({ element: makeRunnerElement(), error: null }),
+        0
+      )
+      return () => clearTimeout(timer)
     }
 
     setState({ element: makeRunnerElement(), error: null })

@@ -193,7 +193,7 @@ describe('ReactCanvas errorComponent', () => {
   const RENDERS_NOTHING = 'const a = 1'
 
   it('shows the built-in toast when showError is set', () => {
-    const { container } = render(<ReactCanvas code={RENDERS_NOTHING} showError />)
+    const { container } = render(<ReactCanvas code={RENDERS_NOTHING} showError showLoader={false} />)
     expect(container.querySelector('#react-code-error').textContent).toContain(
       'did not render anything'
     )
@@ -204,6 +204,7 @@ describe('ReactCanvas errorComponent', () => {
       <ReactCanvas
         code={RENDERS_NOTHING}
         showError
+        showLoader={false}
         errorComponent={(message) => <p data-testid="mine">{message}</p>}
       />
     )
@@ -218,6 +219,7 @@ describe('ReactCanvas errorComponent', () => {
       <ReactCanvas
         code={RENDERS_NOTHING}
         showError
+        showLoader={false}
         errorComponent={(message, dismiss) => (
           <div data-testid="mine">
             {message}
@@ -237,6 +239,7 @@ describe('ReactCanvas errorComponent', () => {
       <ReactCanvas
         code={RENDERS_NOTHING}
         showError
+        showLoader={false}
         errorComponent={<span data-testid="static">Something broke</span>}
       />
     )
@@ -251,7 +254,7 @@ describe('ReactCanvas errorComponent', () => {
       return <div data-testid="mine">Error: {message}</div>
     }
     const { container } = render(
-      <ReactCanvas code={RENDERS_NOTHING} showError errorComponent={MyErrorToast} />
+      <ReactCanvas code={RENDERS_NOTHING} showError showLoader={false} errorComponent={MyErrorToast} />
     )
     // renders, but the message is lost -- exactly why the docs say not to do this
     expect(container.querySelector('[data-testid="mine"]').textContent).toBe('Error: ')
@@ -261,6 +264,7 @@ describe('ReactCanvas errorComponent', () => {
     const { container } = render(
       <ReactCanvas
         code={RENDERS_NOTHING}
+        showLoader={false}
         errorComponent={<span data-testid="static">nope</span>}
       />
     )

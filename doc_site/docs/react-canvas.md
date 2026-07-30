@@ -65,7 +65,7 @@ You can use both together — `persistKey` for instant durability and `onCodeCha
 
 ## Loading state
 
-`showLoader` renders a full-screen overlay (a spinner on a dark background) while non-empty code has not yet produced output. It hides permanently after the first successful render, so later broken edits do not bring it back.
+`showLoader` renders a full-screen overlay (a spinner on a dark background) while the canvas is compiling and evaluating the code. It hides once output is produced and stays hidden, so later broken edits do not bring it back.
 
 It defaults to `!showEditor`. The overlay is `position: fixed; inset: 0`, so it would cover an editor as well as the preview — with `showEditor` on you almost never want it. Pass it explicitly to override either way:
 
@@ -74,21 +74,31 @@ It defaults to `!showEditor`. The overlay is `position: fixed; inset: 0`, so it 
 <ReactCanvas code={code} showEditor showLoader />        // show it even with an editor
 ```
 
-Two cases never show the overlay:
-
-- **Empty code.** Empty or whitespace-only `code` renders nothing at all — no output, no overlay.
-- **Code that compiles and renders immediately.** Evaluation is synchronous, so a valid component resolves within the same commit and the overlay is never painted. This is deliberate: it avoids a one-frame flash on every mount.
-
-Because of that second point, the overlay is not a general "waiting for data" indicator. If you fetch code asynchronously, the wait happens while `code` is still empty, which shows nothing. Render your own placeholder during that phase:
-
-```tsx
-{isFetching ? <MySkeleton /> : <ReactCanvas code={code} />}
-```
-
-Swap the spinner for your own node with `loader`:
+Swap the spinner for your own node with `loader`. It is subject to the same visibility rules, so it cannot get stuck on screen:
 
 ```tsx
 <ReactCanvas code={code} loader={<MyBrandedSpinner />} />
+```
+
+### How the loader gets a chance to appear
+
+Transform and evaluation are **synchronous**. Left alone, the first commit would already contain the finished output, and the browser would never paint a loading state — you would see nothing, then content.
+
+So when `showLoader` is on, the canvas defers the *initial* evaluation by one macrotask: it commits the empty pending state, lets the browser paint the loader, then compiles and evaluates. That costs one extra tick on mount and is why the loader is visible even for fast code.
+
+Two consequences worth knowing:
+
+- **Output is no longer present in the first commit.** With `showLoader` on, `code` is evaluated just after mount rather than during it. Tests that mount and immediately assert on rendered output need to flush a tick first, or pass `showLoader={false}`.
+- **Only the first evaluation is deferred.** Later code changes — every editor keystroke — are evaluated synchronously, so typing does not flash the loader.
+
+`showLoader={false}` skips the deferral entirely and keeps the original fully synchronous behavior.
+
+The overlay never appears for empty or whitespace-only `code` (which renders nothing at all), nor once an error is present — an error is a resolved outcome, and covering it with a spinner would hide the explanation.
+
+It is also not a general "waiting for data" indicator. If you fetch code asynchronously, that wait happens while `code` is still empty, which shows nothing. Render your own placeholder for that phase:
+
+```tsx
+{isFetching ? <MySkeleton /> : <ReactCanvas code={code} />}
 ```
 
 ## Reporting code that renders nothing

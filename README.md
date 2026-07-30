@@ -53,7 +53,7 @@ You can use a Tailwind CDN script in the host app if the rendered code depends o
 | `scope` | `Record<string, any>` | Components, values, and libraries available to the rendered code. |
 | `persistKey` | `string` | Optional `localStorage` key. When set, edited code is saved on change and restored on reload. |
 | `onCodeChange` | `(code: string) => void` | Called whenever the code changes in the editor. Use it to persist code yourself (URL, backend, etc.). |
-| `showLoader` | `boolean` | Shows a full-screen overlay while non-empty code has not produced output yet. Defaults to `!showEditor`. |
+| `showLoader` | `boolean` | Shows a full-screen spinner overlay while the code is being compiled and evaluated. Defaults to `!showEditor`. Enabling it defers the initial evaluation by one macrotask so the spinner can actually paint; later edits stay synchronous. |
 | `loader` | `React.ReactNode` | Replaces the default spinner with your own node. |
 | `onError` | `(error: string) => void` | Called when non-empty code evaluates without throwing but never renders anything. |
 

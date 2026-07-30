@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import React from 'react'
-import { render } from '@testing-library/react'
+import { render, act } from '@testing-library/react'
 
 import { LiveContext } from '../LiveContext'
 import { LiveLoadingOverlay } from '../LiveLoadingOverlay'
@@ -50,22 +50,65 @@ describe('LiveLoadingOverlay', () => {
 
 // Wired through the real ReactCanvas + useRunner pipeline (not a fake context).
 //
-// IMPORTANT: the overlay is currently unreachable through this path. Evaluation
-// is synchronous, so every non-empty code string resolves within one commit to
-// exactly one of:
-//   renders content       -> hasRendered true -> gated off
-//   throws                -> error set        -> gated off
-//   evaluates, no element -> error set        -> gated off
-// and empty code is gated off as well. No input leaves the canvas genuinely
-// pending. These tests pin that reality down; if the overlay becomes reachable
-// (a host-driven `pending` prop, or a suspending component) replace them with
-// positive assertions.
-describe('LiveLoadingOverlay end-to-end (currently unreachable)', () => {
+// `deferFirstRender` (set from `showLoader`) moves the initial transform+eval to
+// the next macrotask, so the pending commit gets painted first. That is what
+// makes the overlay observable at all: transform+eval are synchronous, so
+// without the deferral the very first commit already holds the finished output.
+//
+// "settle" below flushes that macrotask.
+describe('LiveLoadingOverlay end-to-end', () => {
   const overlaySelector = 'div[style*="position: fixed"]'
+  const GOOD = "render(<div id='x'>hi</div>)"
+  const settle = () => act(async () => { await new Promise((r) => setTimeout(r, 0)) })
 
-  it('is not shown for code that renders successfully', () => {
-    const { container } = render(<ReactCanvas code="render(<div id='x'>hi</div>)" />)
+  it('shows the overlay on mount, before the code has been evaluated', () => {
+    const { container } = render(<ReactCanvas code={GOOD} />)
+    expect(container.querySelector(overlaySelector)).not.toBeNull()
+    expect(container.querySelector('#x')).toBeNull()
+  })
+
+  // Stable handle for tests, automation and the SSpinnerCheck harness, matching
+  // the existing #react-code-canvas / #react-code-error convention.
+  it('exposes the overlay as #react-code-loader', () => {
+    const { container } = render(<ReactCanvas code={GOOD} />)
+    expect(container.querySelector('#react-code-loader')).not.toBeNull()
+  })
+
+  it('removes #react-code-loader once evaluation completes', async () => {
+    const { container } = render(<ReactCanvas code={GOOD} />)
+    await settle()
+    expect(container.querySelector('#react-code-loader')).toBeNull()
+  })
+
+  it('replaces the overlay with the rendered output once evaluation completes', async () => {
+    const { container } = render(<ReactCanvas code={GOOD} />)
+    await settle()
     expect(container.querySelector(overlaySelector)).toBeNull()
+    expect(container.querySelector('#x')).not.toBeNull()
+  })
+
+  it('shows a custom loader during the pending window, then clears it', async () => {
+    const { container } = render(
+      <ReactCanvas code={GOOD} loader={<div data-testid="my-loader">loading</div>} />
+    )
+    expect(container.querySelector('[data-testid="my-loader"]')).not.toBeNull()
+
+    await settle()
+    expect(container.querySelector('[data-testid="my-loader"]')).toBeNull()
+    expect(container.querySelector('#x')).not.toBeNull()
+  })
+
+  // Same input, only showEditor differs -> opposite outcomes, so this actually
+  // discriminates rather than passing for unrelated reasons.
+  it('suppresses the overlay when an editor is visible (showLoader defaults to !showEditor)', () => {
+    const { container } = render(<ReactCanvas code={GOOD} showEditor />)
+    expect(container.querySelector(overlaySelector)).toBeNull()
+  })
+
+  it('respects an explicit showLoader={false}, staying fully synchronous', () => {
+    const { container } = render(<ReactCanvas code={GOOD} showLoader={false} />)
+    expect(container.querySelector(overlaySelector)).toBeNull()
+    // no deferral: content is present in the very first commit
     expect(container.querySelector('#x')).not.toBeNull()
   })
 
@@ -74,25 +117,25 @@ describe('LiveLoadingOverlay end-to-end (currently unreachable)', () => {
     expect(container.querySelector(overlaySelector)).toBeNull()
   })
 
-  it('is not shown for code that evaluates but renders nothing (error wins)', () => {
-    const { container } = render(<ReactCanvas code="const a = 1" />)
-    expect(container.querySelector(overlaySelector)).toBeNull()
-  })
-
-  it('is not shown for code that throws', () => {
+  it('is not left on screen when the code errors', async () => {
     const { container } = render(<ReactCanvas code="throw new Error('boom')" />)
+    await settle()
     expect(container.querySelector(overlaySelector)).toBeNull()
   })
 
-  // A custom `loader` must pass through the same visibility gate as the default
-  // overlay, otherwise it renders unconditionally and sticks on screen.
-  it('does not leave a custom loader stuck on screen', () => {
-    const { container } = render(
-      <ReactCanvas
-        code="render(<div>ok</div>)"
-        loader={<div data-testid="my-loader">loading</div>}
-      />
-    )
-    expect(container.querySelector('[data-testid="my-loader"]')).toBeNull()
+  it('is not left on screen when the code renders nothing', async () => {
+    const { container } = render(<ReactCanvas code="const a = 1" />)
+    await settle()
+    expect(container.querySelector(overlaySelector)).toBeNull()
+  })
+
+  // Typing in the editor must not reflash the loader on every keystroke.
+  it('does not reappear on later code changes', async () => {
+    const { container, rerender } = render(<ReactCanvas code={GOOD} />)
+    await settle()
+
+    rerender(<ReactCanvas code={"render(<div id='second'>b</div>)"} />)
+    expect(container.querySelector(overlaySelector)).toBeNull()
+    expect(container.querySelector('#second')).not.toBeNull()
   })
 })

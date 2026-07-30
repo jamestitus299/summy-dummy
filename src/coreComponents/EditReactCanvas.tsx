@@ -167,8 +167,18 @@ export default function EditReactCanvas({
         // `relative` is kept so a caller overriding the toast via containerStyle to
         // position:absolute anchors it to the canvas rather than the page.
         <div style={{ position: "relative" }}>
-            <LiveProvider code={editableCode} scope={finalScope} onError={onError}>
-                {showLoader && <LiveLoadingOverlay render={loader ? () => loader : undefined} />}
+            <LiveProvider
+                code={editableCode}
+                scope={finalScope}
+                onError={onError}
+                deferFirstRender={showLoader}
+            >
+                {showLoader && (
+                    <LiveLoadingOverlay
+                        id="react-code-loader"
+                        render={loader ? () => loader : undefined}
+                    />
+                )}
                 {showPreview && <LivePreview id="react-code-canas-edit-text" />}
                 {showError && <LiveError id="react-code-error" render={renderError} dismissible={dismissibleError} />}
                 {showEditor && <LiveEditor />}

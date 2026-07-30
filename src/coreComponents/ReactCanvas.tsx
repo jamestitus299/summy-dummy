@@ -76,8 +76,16 @@ export default function ReactCanvas({
         persistKey={persistKey}
         onCodeChange={onCodeChange}
         onError={onError}
+        // Only pay the extra macrotask when a loader will actually be painted
+        // during it.
+        deferFirstRender={showLoader}
       >
-        {showLoader && <LiveLoadingOverlay render={loader ? () => loader : undefined} />}
+        {showLoader && (
+          <LiveLoadingOverlay
+            id="react-code-loader"
+            render={loader ? () => loader : undefined}
+          />
+        )}
         {showPreview && <LivePreview id="react-code-canvas" />}
         {showError && <LiveError id="react-code-error" render={renderError} dismissible={dismissibleError} />}
         {showEditor && <LiveEditor />}

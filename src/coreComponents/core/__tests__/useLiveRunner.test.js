@@ -175,6 +175,22 @@ describe('useLiveRunner "rendered nothing" reporting', () => {
     expect(latest.error).toBeNull()
   })
 
+  // Regression: throws used to set `error` but never reach onError, so a host
+  // swapping in a fallback page on failure saw nothing for the commonest failure.
+  it('reports thrown errors through onError, not just "rendered nothing"', async () => {
+    const onError = jest.fn()
+    render(
+      <Harness
+        initialCode="throw new Error('boom')"
+        onState={() => {}}
+        onError={onError}
+      />
+    )
+    await settle()
+    expect(onError).toHaveBeenCalledTimes(1)
+    expect(onError.mock.calls[0][0]).toContain('boom')
+  })
+
   it('preserves a real evaluation error instead of replacing it', async () => {
     let latest
     const onError = jest.fn()

@@ -6,10 +6,14 @@ import { RunnerOptions } from './types'
 export type UseRunnerProps = RunnerOptions & {
   /** whether to cache previous element when error occurs with current code */
   disableCache?: boolean
-  /** called when non-empty code evaluates cleanly but produces no element --
-   * i.e. it never called `render(...)` / never set a default export. Reported
-   * synchronously (the condition is known the moment evaluation returns), and
-   * at most once per mount so editor keystrokes don't spam it. */
+  /** called whenever the current code fails to produce output: either it threw,
+   * or it evaluated cleanly but never called `render(...)` / set a default
+   * export. Both are reported the moment evaluation returns.
+   *
+   * Throws are reported every time they occur, because each is a distinct
+   * failure the host may need to react to. The "rendered nothing" case is
+   * reported at most once per mount, so editor keystrokes through a
+   * half-written component don't spam it. */
   onError?: (error: string) => void
   /** Evaluate the initial code on the next macrotask instead of during the
    * first render.
@@ -63,6 +67,11 @@ export const useRunner = ({
             element: disableCache ? null : elementRef.current,
             error: error.toString(),
           }))
+          // Reported too, not just shown. A host that swaps in a fallback page
+          // on failure needs every error, and a throw is the common one -- if
+          // only "rendered nothing" were reported, broken code would surface as
+          // a toast and nothing else.
+          onErrorRef.current?.(error.toString())
           return
         }
 

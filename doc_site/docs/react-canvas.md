@@ -226,7 +226,7 @@ if (!document.getElementById('my-script')) {
 
 It also means a broken keystroke costs two evaluations: the failed attempt plus a re-run of the last good code. For large components that is worth knowing when the editor feels slow.
 
-Use `CheckReactCode` instead when you only want validation — it skips this behavior and reports the error alone.
+Use `analyzeReactCode()` instead when you only want validation — it never renders, so it never re-runs anything.
 
 ## Usage Notes
 

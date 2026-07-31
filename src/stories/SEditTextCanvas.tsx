@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { scope } from "../scopes/Scope";
 import EditReactCanvas from "../coreComponents/EditReactCanvas";
 import { HelmetProvider } from 'react-helmet-async';
 
@@ -80,7 +79,6 @@ export const SEditTextCanvas: React.FC = () => {
         {/* The editor canvas */}
         <EditReactCanvas
           key={code}
-          scope={scope}
           code={code}
           showEditor={true}
           showError={true}

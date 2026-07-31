@@ -33,6 +33,12 @@ export function isTransformerLoaded() {
   return !!t;
 }
 
+/** Access the loaded Babel helpers. Call after `loadTransformer()`. */
+export function getBabelHelpers() {
+  assertLoaded();
+  return { parser, traverse, generator, t };
+}
+
 function assertLoaded() {
   if (!t) {
     throw new Error(

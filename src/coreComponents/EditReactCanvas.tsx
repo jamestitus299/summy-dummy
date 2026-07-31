@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 
 import { LiveProvider } from "./core/LiveProvider";
-import { LiveEditor } from "./core/LiveEditor";
+import { LazyLiveEditor } from "./core/LazyLiveEditor";
 import { LiveError } from "./core/LiveError";
 import { LivePreview } from "./core/LivePreview";
 import { LiveLoadingOverlay } from "./core/LiveLoadingOverlay";
 
-import { scope as defaultscope } from "../scopes/Scope";
 import { readStored, writeStored } from "./core/storage";
 
 import {
@@ -86,9 +85,10 @@ export default function EditReactCanvas({
         }
     }, [patches]);
 
+    // Caller additions only; the base scope and the lucide/recharts/motion
+    // groups the code references are loaded on demand by useResolvedScope.
     const finalScope = useMemo(
         () => ({
-            ...defaultscope,
             ...(scope ?? {}),
             __applyEditableTextPatch: registerPatch, // expose to EditableText, apply edit patches callback
         }),
@@ -195,7 +195,7 @@ export default function EditReactCanvas({
                 )}
                 {showPreview && <LivePreview id="react-code-canas-edit-text" />}
                 {showError && <LiveError id="react-code-error" render={renderError} dismissible={dismissibleError} />}
-                {showEditor && <LiveEditor />}
+                {showEditor && <LazyLiveEditor />}
             </LiveProvider>
         </div>
     );

@@ -16,7 +16,7 @@ const features = [
     icon: '✅',
     title: 'Validation workflow',
     description:
-      'Render code invisibly with CheckReactCode and capture compile-time or runtime errors before you ever save.',
+      'Check code with analyzeReactCode() in Node — no browser, no render — and catch bad scope references before you ever save.',
   },
   {
     icon: '✍️',

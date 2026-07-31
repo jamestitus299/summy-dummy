@@ -20,7 +20,6 @@ Use it when your application needs to:
 | Component | Purpose |
 | --- | --- |
 | `ReactCanvas` | Renders component code with optional preview, editor, and error output. |
-| `CheckReactCode` | Renders code invisibly and reports whether it fails. |
 | `EditTextReactCanvas` | Renders component code with text editing behavior. |
 
 ## Core Idea

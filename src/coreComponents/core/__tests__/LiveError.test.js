@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import React from 'react'
-import { render, fireEvent } from '@testing-library/react'
+import { render, fireEvent, act } from '@testing-library/react'
 
 import { LiveContext } from '../LiveContext'
 import { LiveError } from '../LiveError'
@@ -192,14 +192,20 @@ describe('ReactCanvas errorComponent', () => {
   // valid JS that never calls render() -> sets an error without throwing
   const RENDERS_NOTHING = 'const a = 1'
 
-  it('shows the built-in toast when showError is set', () => {
+  // The canvas resolves its scope asynchronously (only the lucide/recharts/
+  // motion pieces the code references get loaded), so nothing is evaluated --
+  // and no error exists -- until that settles.
+  const settle = () => act(async () => { await new Promise((r) => setTimeout(r, 0)) })
+
+  it('shows the built-in toast when showError is set', async () => {
     const { container } = render(<ReactCanvas code={RENDERS_NOTHING} showError showLoader={false} />)
+    await settle()
     expect(container.querySelector('#react-code-error').textContent).toContain(
       'did not render anything'
     )
   })
 
-  it('accepts a function errorComponent and passes the message', () => {
+  it('accepts a function errorComponent and passes the message', async () => {
     const { container } = render(
       <ReactCanvas
         code={RENDERS_NOTHING}
@@ -208,13 +214,14 @@ describe('ReactCanvas errorComponent', () => {
         errorComponent={(message) => <p data-testid="mine">{message}</p>}
       />
     )
+    await settle()
     expect(container.querySelector('[data-testid="mine"]').textContent).toContain(
       'did not render anything'
     )
     expect(container.querySelector('#react-code-error')).toBeNull()
   })
 
-  it('forwards the dismiss callback through errorComponent', () => {
+  it('forwards the dismiss callback through errorComponent', async () => {
     const { container } = render(
       <ReactCanvas
         code={RENDERS_NOTHING}
@@ -228,13 +235,14 @@ describe('ReactCanvas errorComponent', () => {
         )}
       />
     )
+    await settle()
     expect(container.querySelector('[data-testid="mine"]')).not.toBeNull()
 
     fireEvent.click(container.querySelector('[aria-label="Close mine"]'))
     expect(container.querySelector('[data-testid="mine"]')).toBeNull()
   })
 
-  it('accepts a plain node errorComponent', () => {
+  it('accepts a plain node errorComponent', async () => {
     const { container } = render(
       <ReactCanvas
         code={RENDERS_NOTHING}
@@ -243,24 +251,26 @@ describe('ReactCanvas errorComponent', () => {
         errorComponent={<span data-testid="static">Something broke</span>}
       />
     )
+    await settle()
     expect(container.querySelector('[data-testid="static"]')).not.toBeNull()
   })
 
   // Documented footgun: a function component IS a function, so it gets invoked
   // as errorComponent(message) with the string where props belong. Pinned here
   // so the docs' :::danger note stays true.
-  it('passing a component type (not an element/render fn) yields no message', () => {
+  it('passing a component type (not an element/render fn) yields no message', async () => {
     function MyErrorToast({ message }) {
       return <div data-testid="mine">Error: {message}</div>
     }
     const { container } = render(
       <ReactCanvas code={RENDERS_NOTHING} showError showLoader={false} errorComponent={MyErrorToast} />
     )
+    await settle()
     // renders, but the message is lost -- exactly why the docs say not to do this
     expect(container.querySelector('[data-testid="mine"]').textContent).toBe('Error: ')
   })
 
-  it('renders no error UI when showError is false, even with errorComponent', () => {
+  it('renders no error UI when showError is false, even with errorComponent', async () => {
     const { container } = render(
       <ReactCanvas
         code={RENDERS_NOTHING}
@@ -268,6 +278,7 @@ describe('ReactCanvas errorComponent', () => {
         errorComponent={<span data-testid="static">nope</span>}
       />
     )
+    await settle()
     expect(container.querySelector('[data-testid="static"]')).toBeNull()
   })
 })

@@ -12,19 +12,19 @@ Primary use cases: previewing JSX from strings, exposing a scoped set of compone
 
 ## Public API
 
-The package entry is `src/index.ts`. It exports three components and their prop types:
+The package entry is `src/index.ts`. It exports two components, their prop types, and a static analyzer:
 
 | Export | Source | Purpose |
 | --- | --- | --- |
 | `ReactCanvas` | `src/coreComponents/ReactCanvas.tsx` | Render React code with optional preview / editor / error panes. |
-| `CheckReactCode` | `src/coreComponents/CheckCodeRender.tsx` | Validate code; calls back with an error message or `null`. |
 | `EditTextReactCanvas` | `src/coreComponents/EditReactCanvas.tsx` | Render + live text editing of the output (in development). |
+| `analyzeReactCode` | `src/analyzer/analyzeReactCode.ts` | Statically validate a code string in Node; no DOM, no render. |
 
-Prop types `ReactCanvasProps`, `CheckCodeRenderProps`, `EditReactCanvasProps` are exported alongside.
+Prop types `ReactCanvasProps` and `EditReactCanvasProps` are exported alongside, plus the analyzer's `AnalysisResult`, `AnalyzeOptions`, `CodeIssue` and `IssueType`.
 
 **Contract for consumer-supplied `code`:** must `export default` a component (or call `render(...)`), must **not** contain `import` statements — dependencies are injected through the `scope` prop instead.
 
-**Code persistence:** `ReactCanvas` and `EditTextReactCanvas` accept `persistKey?: string` (saves/restores code in `localStorage`) and `onCodeChange?: (code: string) => void` (notifies on change so the host can persist however it likes). For `EditTextReactCanvas` these operate on the **final saved JSX**, not the intermediate EditableText form. `CheckReactCode` has no editor, so it intentionally has neither. Shared, SSR-safe storage helpers live in `src/coreComponents/core/storage.ts`.
+**Code persistence:** `ReactCanvas` and `EditTextReactCanvas` accept `persistKey?: string` (saves/restores code in `localStorage`) and `onCodeChange?: (code: string) => void` (notifies on change so the host can persist however it likes). For `EditTextReactCanvas` these operate on the **final saved JSX**, not the intermediate EditableText form. Shared, SSR-safe storage helpers live in `src/coreComponents/core/storage.ts`.
 
 ## Repository structure
 

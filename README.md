@@ -59,23 +59,34 @@ You can use a Tailwind CDN script in the host app if the rendered code depends o
 
 ### Validate React Code
 
-```tsx
-import { CheckReactCode } from "react-code-canvas";
+Static analysis, no DOM and no React render — safe to run in Node (CI, batch audits,
+migrations):
 
-<CheckReactCode
-  code={CODE}
-  scope={SCOPE}
-  returnError={handleError}
-/>;
+```ts
+import { analyzeReactCode } from "react-code-canvas";
+
+const result = await analyzeReactCode(CODE);
+// {
+//   valid: boolean,
+//   issues: [{ type, message, name?, line?, column? }],
+//   unknownGlobals: string[],   // names that will throw ReferenceError
+//   referencedGlobals: string[],
+//   hasDefaultExport: boolean,
+// }
 ```
 
-#### Props
+It parses, transpiles with sucrase, and compiles with `new Function` (constructed,
+never called), then checks every referenced name against the scope. It does **not**
+execute the code, so it cannot catch logic errors or failures that only surface once
+mounted — render it with `ReactCanvas` and its `onError` for that.
 
-| Prop | Type | Description |
+#### Options
+
+| Option | Type | Description |
 | --- | --- | --- |
-| `code` | `string` | React code to validate. |
-| `scope` | `Record<string, any>` | Scope values required for execution. |
-| `returnError` | `(err: string \| null) => void` | Receives an error message, or `null` when the code is valid. |
+| `scope` | `Record<string, unknown>` | Omit to check against exactly what the canvas would load for this code. Passing one replaces that entirely. |
+| `allowedGlobals` | `string[]` | Extra host-injected names to treat as available. |
+| `forbidImports` | `boolean` | Report `import` statements. Default `true` — the canvas strips them, so the bindings are undefined at runtime. |
 
 ### Editable React Code Canvas
 
@@ -103,7 +114,7 @@ import { EditTextReactCanvas } from "react-code-canvas";
 - Empty or whitespace-only `code` renders nothing at all — no output and no loader.
 - The built-in error toast keeps the message in `#react-code-error`. If you replace it with `errorComponent` and rely on scraping that element (for example from a headless browser), keep the id on a statically positioned element — `offsetParent` is `null` on `position: fixed` elements.
 - `errorComponent` takes an **element or a render function**, not a component type. Passing the component itself (`errorComponent={MyToast}`) calls it with the message string in place of props, so it renders blank with no warning. Use `errorComponent={(message, dismiss) => <MyToast message={message} onDismiss={dismiss} />}` — the second argument wires your own close control to the same per-message dismissal the built-in toast uses.
-- When an edit fails to compile, `ReactCanvas` keeps the previous successful render on screen and reports the error. Doing so re-executes the previous code, so any top-level side effects in it (analytics calls, script injection, DOM mutation) run again. Guard side effects if that matters. `CheckReactCode` opts out of this and only reports the error.
+- When an edit fails to compile, `ReactCanvas` keeps the previous successful render on screen and reports the error. Doing so re-executes the previous code, so any top-level side effects in it (analytics calls, script injection, DOM mutation) run again. Guard side effects if that matters.
 - This package evaluates provided code in the browser. Do not execute untrusted code without an additional isolation strategy appropriate for your application.
 
 ## Development

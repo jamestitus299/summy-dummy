@@ -52,7 +52,6 @@ body:
   #     label: Affected API
   #     options:
   #       - ReactCanvas
-  #       - CheckReactCode
   #       - EditTextReactCanvas
   #       - Scope/dependencies
   #       - Build/package output

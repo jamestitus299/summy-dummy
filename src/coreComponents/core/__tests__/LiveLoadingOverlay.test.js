@@ -50,28 +50,30 @@ describe('LiveLoadingOverlay', () => {
 
 // Wired through the real ReactCanvas + useRunner pipeline (not a fake context).
 //
-// `deferFirstRender` (set from `showLoader`) moves the initial transform+eval to
-// the next macrotask, so the pending commit gets painted first. That is what
-// makes the overlay observable at all: transform+eval are synchronous, so
-// without the deferral the very first commit already holds the finished output.
+// Scope resolution is asynchronous -- the canvas loads only the lucide/recharts/
+// motion pieces the code references -- so the first commit is always empty and
+// the overlay is always observable. Transform and eval are still synchronous;
+// they just cannot start until the scope arrives.
 //
-// "settle" below flushes that macrotask.
+// "settle" below flushes that.
 describe('LiveLoadingOverlay end-to-end', () => {
   const overlaySelector = 'div[style*="position: fixed"]'
   const GOOD = "render(<div id='x'>hi</div>)"
   const settle = () => act(async () => { await new Promise((r) => setTimeout(r, 0)) })
 
-  it('shows the overlay on mount, before the code has been evaluated', () => {
+  it('shows the overlay on mount, before the code has been evaluated', async () => {
     const { container } = render(<ReactCanvas code={GOOD} />)
     expect(container.querySelector(overlaySelector)).not.toBeNull()
     expect(container.querySelector('#x')).toBeNull()
+    await settle()
   })
 
   // Stable handle for tests, automation and the SSpinnerCheck harness, matching
   // the existing #react-code-canvas / #react-code-error convention.
-  it('exposes the overlay as #react-code-loader', () => {
+  it('exposes the overlay as #react-code-loader', async () => {
     const { container } = render(<ReactCanvas code={GOOD} />)
     expect(container.querySelector('#react-code-loader')).not.toBeNull()
+    await settle()
   })
 
   it('removes #react-code-loader once evaluation completes', async () => {
@@ -100,21 +102,27 @@ describe('LiveLoadingOverlay end-to-end', () => {
 
   // Same input, only showEditor differs -> opposite outcomes, so this actually
   // discriminates rather than passing for unrelated reasons.
-  it('suppresses the overlay when an editor is visible (showLoader defaults to !showEditor)', () => {
+  it('suppresses the overlay when an editor is visible (showLoader defaults to !showEditor)', async () => {
     const { container } = render(<ReactCanvas code={GOOD} showEditor />)
     expect(container.querySelector(overlaySelector)).toBeNull()
+    await settle()
   })
 
-  it('respects an explicit showLoader={false}, staying fully synchronous', () => {
+  it('respects an explicit showLoader={false}, never mounting an overlay', async () => {
     const { container } = render(<ReactCanvas code={GOOD} showLoader={false} />)
     expect(container.querySelector(overlaySelector)).toBeNull()
-    // no deferral: content is present in the very first commit
+
+    // The content still arrives a tick later -- the scope has to load first --
+    // but no overlay is shown in the meantime.
+    await settle()
+    expect(container.querySelector(overlaySelector)).toBeNull()
     expect(container.querySelector('#x')).not.toBeNull()
   })
 
-  it('is not shown for empty code', () => {
+  it('is not shown for empty code', async () => {
     const { container } = render(<ReactCanvas code="" />)
     expect(container.querySelector(overlaySelector)).toBeNull()
+    await settle()
   })
 
   it('is not left on screen when the code errors', async () => {
@@ -135,6 +143,11 @@ describe('LiveLoadingOverlay end-to-end', () => {
     await settle()
 
     rerender(<ReactCanvas code={"render(<div id='second'>b</div>)"} />)
+    // No overlay during the gap while the new code's scope resolves...
+    expect(container.querySelector(overlaySelector)).toBeNull()
+
+    await settle()
+    // ...and none after it lands either.
     expect(container.querySelector(overlaySelector)).toBeNull()
     expect(container.querySelector('#second')).not.toBeNull()
   })

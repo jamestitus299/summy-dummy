@@ -8,7 +8,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Components',
-      items: ['react-canvas', 'check-react-code', 'edit-text-react-canvas'],
+      items: ['react-canvas', 'edit-text-react-canvas'],
     },
     'scope',
     'security',

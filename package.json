@@ -1,9 +1,9 @@
 {
   "name": "react-code-canvas",
-  "version": "4.2.0-beta.18",
+  "version": "5.0.0-beta.1",
   "packageManager": "bun@1.3.14",
   "sideEffects": false,
-  "description": "A browser-based canvas for rendering React components and editing text content live.",
+  "description": "A browser-based canvas for rendering React components at runtime",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
@@ -15,14 +15,16 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "skills"
   ],
   "scripts": {
     "dev": "bun run storybook",
-    "build": "rm -rf dist && rollup -c",
+    "build": "bun run generate:scopes && rm -rf dist && rollup -c",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:manual:transformer": "bun run scripts/manual/test-custom-transformer.js",
+    "test:manual:analyzer": "bun run scripts/manual/test-analyze-react-code.js",
     "size": "bun run build && size-limit",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
@@ -32,7 +34,8 @@
     "docs:serve": "bun run docs:install && bun --cwd doc_site serve",
     "clean": "rm -rf node_modules dist .cache storybook-static coverage bundle-analysis.html doc_site/node_modules doc_site/build doc_site/.docusaurus",
     "reinstall": "rm -rf node_modules && bun install",
-    "prepublishOnly": "bun run test && bun run build"
+    "prepublishOnly": "bun run test && bun run build",
+    "generate:scopes": "bun run scripts/generate-scope-maps.mjs"
   },
   "dependencies": {
     "@babel/standalone": "8.0.4",
@@ -94,12 +97,15 @@
   },
   "size-limit": [
     {
-      "path": "dist/index.js",
-      "limit": "250 KB"
+      "name": "ReactCanvas (what a consumer actually loads)",
+      "path": "dist/index.esm.js",
+      "import": "{ ReactCanvas }",
+      "limit": "120 kB"
     },
     {
-      "path": "dist/index.esm.js",
-      "limit": "250 KB"
+      "name": "cjs entry",
+      "path": "dist/index.js",
+      "limit": "140 kB"
     }
   ],
   "keywords": [

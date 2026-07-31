@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import ReactCanvas from "../coreComponents/ReactCanvas";
-import { scope } from "../scopes/Scope";
 
 /**
  * Manual/visual verification harness for the loading overlay.
@@ -220,7 +219,6 @@ export const SSpinnerCheck: React.FC = () => {
                 {runId > 0 && (
                     <ReactCanvas
                         key={`${caseKey}-${runId}`}
-                        scope={scope}
                         code={active.code}
                         showError
                         {...(showLoader === false ? { showLoader: false } : {})}

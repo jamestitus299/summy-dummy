@@ -1,12 +1,10 @@
 import React, { useEffect, useMemo } from "react";
 
 import { LiveProvider } from "./core/LiveProvider";
-import { LiveEditor } from "./core/LiveEditor";
+import { LazyLiveEditor } from "./core/LazyLiveEditor";
 import { LiveError } from "./core/LiveError";
 import { LivePreview } from "./core/LivePreview";
 import { LiveLoadingOverlay } from "./core/LiveLoadingOverlay";
-
-import { scope as defaultscope } from "../scopes/Scope";
 
 export interface ReactCanvasProps {
   code: string;
@@ -54,10 +52,11 @@ export default function ReactCanvas({
   dismissibleError = true,
 }: ReactCanvasProps) {
 
-  // Merge scopes; only depend on `scope` so memo is stable.
-  const finalScope = useMemo(() => {
-    return { ...defaultscope, ...(scope ?? {}) };
-  }, [scope]);
+  // Only the caller's additions. The base scope, and the lucide/recharts/motion
+  // groups the code actually references, are loaded on demand by
+  // useResolvedScope -- memoised here so that resolution is not re-run on every
+  // render by an inline object literal.
+  const finalScope = useMemo(() => scope ?? {}, [scope]);
 
   const renderError = errorComponent
     ? (message: string, dismiss: () => void) =>
@@ -88,7 +87,7 @@ export default function ReactCanvas({
         )}
         {showPreview && <LivePreview id="react-code-canvas" />}
         {showError && <LiveError id="react-code-error" render={renderError} dismissible={dismissibleError} />}
-        {showEditor && <LiveEditor />}
+        {showEditor && <LazyLiveEditor />}
       </LiveProvider>
     </div>
   );

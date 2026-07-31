@@ -4,6 +4,7 @@ import { useRunner } from './useRunner'
 import { UseRunnerProps } from './useRunner'
 import { UseRunnerReturn } from './useRunner'
 import { readStored, writeStored } from './storage'
+import { useResolvedScope } from './useResolvedScope'
 
 export type UseLiveRunnerProps = Omit<UseRunnerProps, 'code'> & {
   /** initial code for the live runner */
@@ -40,9 +41,16 @@ export const useLiveRunner = ({
     [persistKey, onCodeChange]
   )
 
+  // `scope` here is only the caller's additions -- the base scope and the
+  // lazily-loaded groups are assembled by useResolvedScope.
+  const { scope: extraScope, ...runnerProps } = rest
+  const runCode = transformCode ? transformCode(code) : code
+  const { scope, readyCode } = useResolvedScope(runCode, extraScope)
+
   const { element, error, hasRendered } = useRunner({
-    code: transformCode ? transformCode(code) : code,
-    ...rest,
+    code: readyCode,
+    scope,
+    ...runnerProps,
   })
 
   // Resync when the parent changes `initialCode`, but skip the initial mount

@@ -41,19 +41,37 @@ const external = [
 
 const config = {
   input: "src/index.ts",
+  // `dir` rather than `file`: the editor is dynamically imported (see
+  // LazyLiveEditor), and a local dynamic import can only become its own chunk
+  // if rollup is allowed to emit more than one file. With `file` rollup either
+  // errors or, with inlineDynamicImports, folds the editor -- and therefore
+  // prism-react-renderer -- straight back into the entry.
+  //
+  // entryFileNames keeps the published paths that `main` and `module` point at.
   output: [
     {
-      file: "dist/index.js",
+      dir: "dist",
       format: "cjs",
+      entryFileNames: "index.js",
+      chunkFileNames: "chunks/cjs/[name]-[hash].js",
       sourcemap: false,
     },
     {
-      file: "dist/index.esm.js",
+      dir: "dist",
       format: "esm",
+      entryFileNames: "index.esm.js",
+      chunkFileNames: "chunks/esm/[name]-[hash].js",
       sourcemap: false,
     },
   ],
-  external: external,
+  // Match subpaths too, not just bare package names. The lazy scope imports
+  // ~1650 individual icon files as `lucide-react/dist/esm/icons/*.js`; without
+  // this they are treated as local modules, pulled into the graph, and rollup
+  // runs out of memory trying to inline them into a single-file bundle. Left
+  // external, each stays a literal dynamic import for the consumer's bundler
+  // to split -- which is the entire point of loading icons one at a time.
+  external: (id) =>
+    external.some((pkg) => id === pkg || id.startsWith(`${pkg}/`)),
   plugins: [
     json(),
     typescript({

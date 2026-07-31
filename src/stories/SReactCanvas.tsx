@@ -1,6 +1,5 @@
 import React from "react";
 import ReactCanvas from "../coreComponents/ReactCanvas";
-import { scope } from "../scopes/Scope";
 import { HelmetProvider } from 'react-helmet-async';
 
 function CanvasErrorBanner({ message, onDismiss }: { message: string; onDismiss?: () => void }) {
@@ -44,7 +43,6 @@ export const SReactCanvas: React.FC = () => {
     return (
         <HelmetProvider>
             <ReactCanvas
-                scope={scope}
                 code={""}
                 showEditor={true}
                 showError={true}

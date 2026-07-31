@@ -46,6 +46,12 @@
     "dist",
     "**/*.test.ts",
     "**/*.test.tsx",
-    "**/*.stories.tsx"
+    "**/*.stories.ts",
+    "**/*.stories.tsx",
+    // Storybook-only components. Without this they are compiled into
+    // dist/stories/*.d.ts and published, even though nothing in the package
+    // entry references them. Storybook does its own transpiling and does not
+    // read this include list.
+    "src/stories/**"
   ]
 }

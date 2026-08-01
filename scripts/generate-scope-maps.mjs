@@ -131,6 +131,7 @@ const exportNames = async (mod) => Object.keys(await import(mod)).filter(isUsabl
 
 const recharts = await exportNames("recharts");
 const motion = await exportNames("motion/react");
+const fa = await exportNames("react-icons/fa");
 
 const quoted = (names) => names.map((n) => `  '${n}',`).join("\n");
 
@@ -149,9 +150,16 @@ ${quoted(recharts)}
 export const MOTION_NAMES: string[] = [
 ${quoted(motion)}
 ]
+
+/** react-icons/fa exports. The pack is a single module with no per-icon files,
+ * so unlike lucide it can only be fetched whole (~424 KB gzipped). The list is
+ * what lets that fetch be skipped entirely for code that references no Fa name. */
+export const FA_NAMES: string[] = [
+${quoted(fa)}
+]
 `,
 );
 
 console.log(
-  `wrote ${OUT_NAMES}\n  ${recharts.length} recharts names, ${motion.length} motion names`,
+  `wrote ${OUT_NAMES}\n  ${recharts.length} recharts names, ${motion.length} motion names, ${fa.length} fa names`,
 );

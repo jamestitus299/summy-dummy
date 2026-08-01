@@ -11,7 +11,7 @@ import React, {
 import { editComponentScope } from "./editComponentScope";
 import helmetScope from "./helmetScope";
 import { ICON_LOADERS, ICON_ALIASES } from "./generated/lucideIconMap";
-import { RECHARTS_NAMES, MOTION_NAMES } from "./generated/scopeNames";
+import { RECHARTS_NAMES, MOTION_NAMES, FA_NAMES } from "./generated/scopeNames";
 
 type Scope = Record<string, any>;
 
@@ -35,6 +35,7 @@ export const baseScope: Scope = {
 
 const RECHARTS_SET = new Set(RECHARTS_NAMES);
 const MOTION_SET = new Set(MOTION_NAMES);
+const FA_SET = new Set(FA_NAMES);
 
 /**
  * `PascalCase` -> `kebab-case`. Must stay in step with the same function in
@@ -110,6 +111,9 @@ export const isRechartsName = (name: string): boolean => RECHARTS_SET.has(name);
 /** True if the name comes from motion/react. */
 export const isMotionName = (name: string): boolean => MOTION_SET.has(name);
 
+/** True if the name is a Font Awesome icon from react-icons/fa. */
+export const isFaName = (name: string): boolean => FA_SET.has(name);
+
 /**
  * The names `resolveScope` would put in scope for this code, without loading
  * anything. Mirrors resolveScope exactly, because it is what decides the
@@ -124,6 +128,9 @@ export function scopeNamesFor(code: string, extra: string[] = []): string[] {
   for (const name of collectIdentifiers(code)) {
     if (RECHARTS_SET.has(name)) needsRecharts = true;
     if (MOTION_SET.has(name)) needsMotion = true;
+    // Only the Fa names actually referenced, not all 1611. The pack is fetched
+    // whole but the scope stays small -- these become `new Function` parameters.
+    if (FA_SET.has(name)) names.add(name);
     if (iconLoaderFor(name)) names.add(name);
   }
 
@@ -158,12 +165,14 @@ export async function resolveScope(
 
   const identifiers = collectIdentifiers(code);
   const pending: Promise<unknown>[] = [];
+  const faNames = new Set<string>();
   let needsRecharts = false;
   let needsMotion = false;
 
   for (const name of identifiers) {
     if (RECHARTS_SET.has(name)) needsRecharts = true;
     if (MOTION_SET.has(name)) needsMotion = true;
+    if (FA_SET.has(name)) faNames.add(name);
 
     const loader = iconLoaderFor(name);
     if (!loader) continue;
@@ -189,6 +198,21 @@ export async function resolveScope(
       // `motion` has to keep its name -- <motion.div> resolves against it.
       import("motion/react").then((mod) => {
         assignNamespace(scope, mod);
+      }),
+    );
+  }
+
+  if (faNames.size) {
+    // ponytail: whole-pack fetch (~424 KB gzipped). react-icons/fa is a single
+    // module with no per-icon files, so it cannot be split the way lucide is --
+    // there is nothing finer to import. Only pages that name an Fa icon pay it,
+    // and only once. Upgrade path if that cost ever matters: generate per-icon
+    // modules from the pack ourselves, or move the code to lucide equivalents.
+    pending.push(
+      import("react-icons/fa").then((mod: Record<string, unknown>) => {
+        // Assign only what the code referenced, not all 1611 exports: these
+        // become `new Function` parameters on every evaluation.
+        for (const name of faNames) scope[name] = mod[name];
       }),
     );
   }

@@ -3,6 +3,7 @@ import {
   collectIdentifiers,
   iconLoaderFor,
   isIconName,
+  isFaName,
   isMotionName,
   isRechartsName,
   resolveScope,
@@ -74,6 +75,13 @@ describe('group membership', () => {
   it('does not treat `default` as a library name', () => {
     expect(isRechartsName('default')).toBe(false)
     expect(isMotionName('default')).toBe(false)
+    expect(isFaName('default')).toBe(false)
+  })
+
+  it('recognises Font Awesome names, and only real ones', () => {
+    expect(isFaName('FaUser')).toBe(true)
+    expect(isFaName('FaHome')).toBe(true)
+    expect(isFaName('FaNotAnIcon')).toBe(false)
   })
 })
 
@@ -103,6 +111,15 @@ describe('scopeNamesFor', () => {
     const names = scopeNamesFor('render(<Activity/>)')
     expect(names).toContain('Activity')
     expect(names).not.toContain('ChevronRight')
+  })
+
+  // Unlike recharts, the fa pack is fetched whole but only the referenced names
+  // are put in scope -- 1611 extra `new Function` parameters is the cost the
+  // lazy rewrite existed to remove.
+  it('adds only the Font Awesome icons the code references', () => {
+    const names = scopeNamesFor('render(<FaUser/>)')
+    expect(names).toContain('FaUser')
+    expect(names).not.toContain('FaHome')
   })
 
   it('pulls in every recharts name once one is referenced', () => {
@@ -156,6 +173,15 @@ describe('resolveScope', () => {
 
     const scope = await resolveScope('render(<motion.div/>)')
     expect(typeof scope.motion).not.toBe('undefined')
+  })
+
+  it('loads Font Awesome only when referenced, and only the named icons', async () => {
+    expect((await resolveScope('render(<div/>)')).FaUser).toBeUndefined()
+
+    const scope = await resolveScope('render(<FaUser/>)')
+    expect(typeof scope.FaUser).not.toBe('undefined')
+    // the pack arrives whole, but the rest of it stays out of the scope
+    expect(scope.FaHome).toBeUndefined()
   })
 
   it('never puts `default` in the scope', async () => {

@@ -34,6 +34,7 @@ const external = [
   "@babel/types",
   "@babel/generator",
   "motion/react",
+  "react-icons",
   "@emotion/react",
   "@emotion/is-prop-valid",
   "react-helmet-async",

@@ -37,8 +37,9 @@ describe("scope object", () => {
         expect(scope.House).toBeDefined();
     });
 
-    // react-icons/fa was dropped: ~424KB gzipped duplicating lucide's coverage.
-    // Pinned so it cannot creep back in unnoticed.
+    // Fa icons are available, but only through the lazy scope -- referencing one
+    // fetches the pack (~424KB gzipped) on demand. This eager scope must stay
+    // free of them, or every consumer pays that cost whether they use it or not.
     test("does NOT contain react-icons/fa components", () => {
         expect(scope.FaBeer).toBeUndefined();
         expect(scope.FaHeart).toBeUndefined();

@@ -45,6 +45,16 @@ describe('analyzeReactCode', () => {
     expect(r.issues[0].message).toContain('ReferenceError')
   })
 
+  // Fa icons resolve through the lazy scope, so legacy stored code that predates
+  // the lucide switch must not be reported as broken.
+  it('accepts Font Awesome names, which load lazily', async () => {
+    const r = await analyzeReactCode(
+      `export default function A() { return <div><FaUser /><FaHome /></div>; }`,
+    )
+    expect(r.valid).toBe(true)
+    expect(r.unknownGlobals).toEqual([])
+  })
+
   it('catches unknown names in expression position too', async () => {
     const r = await analyzeReactCode(`export default function A() {
   return <div>{formatCurrency(10)}</div>;

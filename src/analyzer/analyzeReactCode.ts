@@ -2,6 +2,7 @@ import { loadTransformer, getBabelHelpers } from "../coreComponents/core/custom-
 import { transform, normalizeCode } from "../coreComponents/core/transform";
 import {
   baseScope,
+  isFaName,
   isIconName,
   isMotionName,
   isRechartsName,
@@ -209,7 +210,10 @@ export async function analyzeReactCode(
   const isAvailable = (name: string): boolean =>
     available.has(name) ||
     (usingDefaultScope &&
-      (isIconName(name) || isRechartsName(name) || isMotionName(name)));
+      (isIconName(name) ||
+        isRechartsName(name) ||
+        isMotionName(name) ||
+        isFaName(name)));
 
   const referenced = new Set<string>();
   const unknown = new Map<string, CodeIssue>();

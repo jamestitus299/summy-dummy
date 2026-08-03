@@ -1,11 +1,51 @@
-import * as parser from "@babel/parser";
-import _traverse from "@babel/traverse";
-import _generator from "@babel/generator";
-import * as t from "@babel/types";
+// @babel/standalone is ~1.5MB minified and is only needed by the editable-text
+// feature (EditTextReactCanvas). Importing it statically pulled it into every
+// consumer's bundle, including ones that only use ReactCanvas. Loading it via a
+// dynamic import lets bundlers split it into a chunk fetched on demand.
+//
+// The transform functions below stay synchronous; call `loadTransformer()` once
+// before using them (EditReactCanvas awaits it on mount).
+let parser = null;
+let traverse = null;
+let generator = null;
+let t = null;
 
-// Handle ESM/CommonJS interop for traverse and generator
-const traverse = _traverse.default || _traverse;
-const generator = _generator.default || _generator;
+let loadPromise = null;
+
+/** Load @babel/standalone and wire up the AST helpers. Idempotent. */
+export function loadTransformer() {
+  if (t) return Promise.resolve();
+  if (!loadPromise) {
+    loadPromise = import("@babel/standalone").then((mod) => {
+      // CJS/ESM interop: bundlers may hand back the namespace or {default}.
+      const Babel = mod && mod.packages ? mod : mod.default || mod;
+      parser = Babel.packages.parser;
+      traverse = Babel.packages.traverse.default;
+      generator = Babel.packages.generator.default;
+      t = Babel.packages.types;
+    });
+  }
+  return loadPromise;
+}
+
+/** True once the Babel-backed helpers are ready. */
+export function isTransformerLoaded() {
+  return !!t;
+}
+
+/** Access the loaded Babel helpers. Call after `loadTransformer()`. */
+export function getBabelHelpers() {
+  assertLoaded();
+  return { parser, traverse, generator, t };
+}
+
+function assertLoaded() {
+  if (!t) {
+    throw new Error(
+      "react-code-canvas: transformer not loaded. Await loadTransformer() first."
+    );
+  }
+}
 
 /** Decode \uXXXX to unicode characters */
 function decodeUnicodeEscape(text) {
@@ -65,237 +105,279 @@ function convertAttributes(originalAttributes) {
  * Transform JSX text elements to <EditableText>. Assigns `text_node_id` to textNodes.
  * @param {string} code - JSX or TSX code to be transformed.
  * @param {object} options - Optional config
- * @returns {object} - { transformedCode, ast }
+ * @returns {object} - { transformedCode, ast, error }
  */
 export function transformJSXTextToEditableText(code, options = {}) {
-  const {
-    targetTags = [
-      "h1", "h2", "h3", "h4", "h5", "h6", "p", "span", "label", "strong",
-      "em", "small", "b", "i", "mark", "del", "ins", "li", "blockquote",
-      "cite", "pre", "code", "summary", "figcaption", "a", "abbr", "time",
-      "kbd", "var", "samp",
-    ],
-    multilineThreshold = 8,
-  } = options;
+  try {
+    assertLoaded();
+    if (!code) {
+      return { transformedCode: null, ast: null, error: "No code given." };
+    }
 
-  // node id
-  let nextId = 1;
+    const {
+      targetTags = [
+        "h1", "h2", "h3", "h4", "h5", "h6", "p", "span", "label", "strong",
+        "em", "small", "b", "i", "mark", "del", "ins", "li", "blockquote",
+        "cite", "pre", "code", "summary", "figcaption", "a", "abbr", "time",
+        "kbd", "var", "samp",
+      ],
+      multilineThreshold = 8,
+    } = options;
 
-  const ast = parser.parse(code, {
-    sourceType: "module",
-    plugins: ["jsx", "typescript"],
-  });
+    // node id
+    let nextId = 1;
 
-  traverse(ast, {
-    JSXElement(path) {
-      const opening = path.node.openingElement;
-      if (!t.isJSXIdentifier(opening.name)) return;
+    let ast;
+    // validate code for syntax errors
+    try {
+      ast = parser.parse(code, {
+        sourceType: "module",
+        plugins: ["jsx", "typescript"],
+      });
+    } catch (err) {
+      // console.error(`Parsing Error at line ${err.loc?.line}: ${err.message}`);
+      // return error
+      return { transformedCode: null, ast: null, error: err };
+    }
 
-      const tagName = opening.name.name;
-      if (!targetTags.includes(tagName)) return;
+    traverse(ast, {
+      JSXElement(path) {
+        const opening = path.node.openingElement;
+        if (!t.isJSXIdentifier(opening.name)) return;
 
-      const children = path.node.children;
+        const tagName = opening.name.name;
+        if (!targetTags.includes(tagName)) return;
 
-      // Skip if ANY expression containers exist (dynamic content)
-      if (children.some((c) => t.isJSXExpressionContainer(c))) return;
+        const children = path.node.children;
 
-      // Find text children only
-      const textNode = children.find((child) => t.isJSXText(child));
-      if (!textNode || !textNode.value.trim()) return;
+        // Skip if ANY expression containers exist (dynamic content)
+        if (children.some((c) => t.isJSXExpressionContainer(c))) return;
 
-      const textValue = textNode.value.trim();
+        // Find text children only
+        const textNode = children.find((child) => t.isJSXText(child));
+        if (!textNode || !textNode.value.trim()) return;
 
-      const textIsMultiline = isMultilineText(textValue, multilineThreshold);
+        const textValue = textNode.value.trim();
 
-      let attributes = convertAttributes(opening.attributes);
+        const textIsMultiline = isMultilineText(textValue, multilineThreshold);
 
-      // Generate Node ID
-      const textNodeId = "text_node_" + nextId++;
+        let attributes = convertAttributes(opening.attributes);
 
-      // CRITICAL: Attach node_id to do the patch updates, attach the node_id to the textNode.extra
-      if (!textNode.extra) textNode.extra = {};
-      textNode.extra.textNodeId = textNodeId;
+        // Generate Node ID
+        const textNodeId = "text_node_" + nextId++;
 
-      // attach nodeId to node
-      attributes.push(
-        t.jsxAttribute(
-          t.jsxIdentifier("nodeId"),
-          t.stringLiteral(textNodeId)
-        )
-      );
+        // CRITICAL: Attach node_id to do the patch updates, attach the node_id to the textNode.extra
+        if (!textNode.extra) textNode.extra = {};
+        textNode.extra.textNodeId = textNodeId;
 
-      // attach custom patch dispatcher - implemented in the edit canvas state manager
-      attributes.push(
-        t.jsxAttribute(
-          t.jsxIdentifier("__applyEditableTextPatch"),
-          t.jsxExpressionContainer(t.identifier("__applyEditableTextPatch"))
-        )
-      );
-
-      // Append new attributes
-      attributes.push(
-        t.jsxAttribute(
-          t.jsxIdentifier("textContent"),
-          t.jsxExpressionContainer(t.stringLiteral(textValue))
-        ),
-        t.jsxAttribute(t.jsxIdentifier("elementType"), t.stringLiteral(tagName))
-      );
-
-      if (textIsMultiline) {
+        // attach nodeId to node
         attributes.push(
           t.jsxAttribute(
-            t.jsxIdentifier("multiline"),
-            t.jsxExpressionContainer(t.booleanLiteral(true))
+            t.jsxIdentifier("nodeId"),
+            t.stringLiteral(textNodeId)
           )
         );
-      }
 
-      // Create new EditableText element
-      const newElement = t.jsxElement(
-        t.jsxOpeningElement(t.jsxIdentifier("EditableText"), attributes, false),
-        t.jsxClosingElement(t.jsxIdentifier("EditableText")),
-        children
-      )
+        // attach custom patch dispatcher - implemented in the edit canvas state manager
+        attributes.push(
+          t.jsxAttribute(
+            t.jsxIdentifier("__applyEditableTextPatch"),
+            t.jsxExpressionContainer(t.identifier("__applyEditableTextPatch"))
+          )
+        );
 
-      path.replaceWith(newElement);
-    },
-  });
+        // Append new attributes
+        attributes.push(
+          t.jsxAttribute(
+            t.jsxIdentifier("textContent"),
+            t.jsxExpressionContainer(t.stringLiteral(textValue))
+          ),
+          t.jsxAttribute(t.jsxIdentifier("elementType"), t.stringLiteral(tagName))
+        );
 
-  let { code: transformedCode } = generator(ast, {
-    retainLines: true,
-  });
-  transformedCode = decodeUnicodeEscape(transformedCode) // decode unicode escape characters
+        if (textIsMultiline) {
+          attributes.push(
+            t.jsxAttribute(
+              t.jsxIdentifier("multiline"),
+              t.jsxExpressionContainer(t.booleanLiteral(true))
+            )
+          );
+        }
 
-  return { transformedCode, ast };
+        // Create new EditableText element
+        const newElement = t.jsxElement(
+          t.jsxOpeningElement(t.jsxIdentifier("EditableText"), attributes, false),
+          t.jsxClosingElement(t.jsxIdentifier("EditableText")),
+          children
+        )
+
+        path.replaceWith(newElement);
+      },
+    });
+
+    let { code: transformedCode } = generator(ast, {
+      retainLines: true,
+    });
+    transformedCode = decodeUnicodeEscape(transformedCode) // decode unicode escape characters
+
+    return { transformedCode: transformedCode, ast: ast, error: null };
+  }
+  catch (error) {
+    return { transformedCode: null, ast: null, error: error };
+  }
 }
 
 /**
  * Reverse transform <EditableText> into original JSX elements.
  * @param {string} code - JSX code containing <EditableText>.
- * @returns {string} - Reconstructed JSX.
+ * @returns {Object} - Reconstructed JSX - {transformedCode, error}.
  */
 export function transformEditableTextToJSX(code) {
-  const ast = parser.parse(code, {
-    sourceType: "module",
-    plugins: ["jsx", "typescript"],
-  });
+  try {
+    assertLoaded();
+    if (!code) {
+      return { transformedCode: null, error: "No code given." };
+    }
 
-  traverse(ast, {
-    JSXElement(path) {
-      const opening = path.node.openingElement;
-      if (!t.isJSXIdentifier(opening.name)) return;
-
-      const tagName = opening.name.name;
-      if (tagName !== "EditableText") return;
-
-      const attributes = opening.attributes;
-
-      // Extract props
-      const props = {};
-      attributes.forEach((attr) => {
-        if (t.isJSXAttribute(attr) && t.isJSXIdentifier(attr.name)) {
-          const propName = attr.name.name;
-
-          // textContent="abc"
-          if (t.isStringLiteral(attr.value)) {
-            props[propName] = attr.value.value;
-          }
-
-          // textContent={"abc"}
-          else if (
-            t.isJSXExpressionContainer(attr.value) &&
-            t.isStringLiteral(attr.value.expression)
-          ) {
-            props[propName] = attr.value.expression.value;
-          }
-
-          // boolean: multiline={true}
-          else if (
-            t.isJSXExpressionContainer(attr.value) &&
-            t.isBooleanLiteral(attr.value.expression)
-          ) {
-            props[propName] = attr.value.expression.value;
-          }
-        }
+    let ast;
+    // validate code for syntax errors
+    try {
+      ast = parser.parse(code, {
+        sourceType: "module",
+        plugins: ["jsx", "typescript"],
       });
+    } catch (err) {
+      // console.error(`Parsing Error at line ${err.loc?.line}: ${err.message}`);
+      // return error
+      return { transformedCode: null, error: err };
+    }
 
-      const elementType = props.elementType || "span";
-      const textContent = props.textContent || "";
-      const tailwindStyles = props.tailwindStyles;
-      const multiline = props.multiline;
+    traverse(ast, {
+      JSXElement(path) {
+        const opening = path.node.openingElement;
+        if (!t.isJSXIdentifier(opening.name)) return;
 
-      // Build new opening tag
-      const newOpening = t.jsxOpeningElement(
-        t.jsxIdentifier(elementType),
-        [
-          ...(tailwindStyles
-            ? [
-              t.jsxAttribute(
-                t.jsxIdentifier("className"),
-                t.stringLiteral(tailwindStyles)
-              ),
-            ]
-            : []),
-        ],
-        false
-      );
+        const tagName = opening.name.name;
+        if (tagName !== "EditableText") return;
 
-      // Determine children
-      const children =
-        path.node.children.length > 0
-          ? path.node.children // preserve nested children
-          : [t.jsxText(textContent)]; // or restore textContent as text
+        const attributes = opening.attributes;
 
-      // Closing tag
-      const newClosing = t.jsxClosingElement(t.jsxIdentifier(elementType));
+        // Extract props
+        const props = {};
+        attributes.forEach((attr) => {
+          if (t.isJSXAttribute(attr) && t.isJSXIdentifier(attr.name)) {
+            const propName = attr.name.name;
 
-      // Construct new element
-      const newElement = t.jsxElement(newOpening, newClosing, children);
+            // textContent="abc"
+            if (t.isStringLiteral(attr.value)) {
+              props[propName] = attr.value.value;
+            }
 
-      path.replaceWith(newElement);
-    },
-  });
+            // textContent={"abc"}
+            else if (
+              t.isJSXExpressionContainer(attr.value) &&
+              t.isStringLiteral(attr.value.expression)
+            ) {
+              props[propName] = attr.value.expression.value;
+            }
 
-  let { code: transformedCode } = generator(ast, {
-    retainLines: true,
-  });
-  transformedCode = decodeUnicodeEscape(transformedCode) // decode unicode escape characters
+            // boolean: multiline={true}
+            else if (
+              t.isJSXExpressionContainer(attr.value) &&
+              t.isBooleanLiteral(attr.value.expression)
+            ) {
+              props[propName] = attr.value.expression.value;
+            }
+          }
+        });
 
-  return transformedCode;
+        const elementType = props.elementType || "span";
+        const textContent = props.textContent || "";
+        const tailwindStyles = props.tailwindStyles;
+        const multiline = props.multiline;
+
+        // Build new opening tag
+        const newOpening = t.jsxOpeningElement(
+          t.jsxIdentifier(elementType),
+          [
+            ...(tailwindStyles
+              ? [
+                t.jsxAttribute(
+                  t.jsxIdentifier("className"),
+                  t.stringLiteral(tailwindStyles)
+                ),
+              ]
+              : []),
+          ],
+          false
+        );
+
+        // Determine children
+        const children =
+          path.node.children.length > 0
+            ? path.node.children // preserve nested children
+            : [t.jsxText(textContent)]; // or restore textContent as text
+
+        // Closing tag
+        const newClosing = t.jsxClosingElement(t.jsxIdentifier(elementType));
+
+        // Construct new element
+        const newElement = t.jsxElement(newOpening, newClosing, children);
+
+        path.replaceWith(newElement);
+      },
+    });
+
+    let { code: transformedCode } = generator(ast, {
+      retainLines: true,
+    });
+    transformedCode = decodeUnicodeEscape(transformedCode) // decode unicode escape characters
+
+    return { transformedCode: transformedCode, error: null };
+  }
+  catch (error) {
+    return { transformedCode: null, error: "error" };
+  }
 }
 
 /**
  * Apply text patches to the AST based on Node IDs.
  * @param {object} originalAst - The AST returned from transformJSXTextToEditableText
  * @param {object} patches - Object mapping nodeIds to new text strings { "text_node_*id*": "New Text" }
+ * @returns {Object} - Reconstructed JSX after applying updates - {transformedCode, error}.
  */
 export function applyPatchesToAst(originalAst, patches) {
-  if (!originalAst) return "";
+  try {
+    assertLoaded();
+    if (!originalAst) return { transformedCode: null, error: "No AST given to apply patches." };
 
-  // 1. Apply Text Updates
-  if (patches && Object.keys(patches).length > 0) {
-    traverse(originalAst, {
-      JSXText(path) {
-        const id = path.node.extra?.textNodeId;
-        if (id && patches[id] !== undefined) {
-          // Update the value
-          path.node.value = patches[id];
+    // Apply Text Updates
+    if (patches && Object.keys(patches).length > 0) {
+      traverse(originalAst, {
+        JSXText(path) {
+          const id = path.node.extra?.textNodeId;
+          if (id && patches[id] !== undefined) {
+            // Update the value
+            path.node.value = patches[id];
 
-          // CRITICAL FIX: Delete the 'raw' source cache. 
-          // If this exists, Babel generator will print the OLD text from the source code.
-          // if (path.node.extra) {
-          //   delete path.node.extra.raw;
-          //   delete path.node.extra.rawValue;
-          // }
+            if (path.node.extra) {
+              delete path.node.extra.raw;
+              delete path.node.extra.rawValue;
+            }
+          }
         }
-      }
+      });
+    }
+
+    // Generate Code
+    let { code: transformedCode } = generator(originalAst, {
+      retainLines: true,
     });
+
+    transformedCode = decodeUnicodeEscape(transformedCode);
+    return { transformedCode: transformedCode, error: null }
   }
-
-  // 3. Generate Code
-  let { code: transformedCode } = generator(originalAst, {
-    retainLines: true,
-  });
-
-  return decodeUnicodeEscape(transformedCode);
+  catch (err) {
+    return { transformedCode: null, error: err }
+  }
 }

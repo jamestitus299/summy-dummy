@@ -1,0 +1,5 @@
+<!-- Storybook injects this into every preview iframe's <head>, before any story
+     mounts. Loading the Tailwind CDN script here (instead of per-story via
+     <Helmet>) makes it load unconditionally and removes any dependency on
+     Helmet/React version behavior for something that's just dev tooling. -->
+<script src="https://cdn.tailwindcss.com"></script>

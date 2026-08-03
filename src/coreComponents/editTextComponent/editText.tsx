@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 
 export interface EditableTextProps {
   textContent?: string;
-  elementType?: keyof JSX.IntrinsicElements;
+  // React 19 removed the global JSX namespace; it now lives under React.
+  elementType?: keyof React.JSX.IntrinsicElements;
   placeholder?: string;
   tailwindStyles?: string;
   onChange?: (newText: string) => void;
@@ -19,7 +20,9 @@ export interface EditableTextProps {
  */
 type RichNode =
   | { type: "text"; value: string }
-  | { type: "element"; element: React.ReactElement; key: string };
+  // React 19 types ReactElement's props as `unknown` by default; these are
+  // arbitrary nested EditableText elements, so keep props indexable.
+  | { type: "element"; element: React.ReactElement<any>; key: string };
 
 /**
  * Walks React children and converts them into RichNode[]

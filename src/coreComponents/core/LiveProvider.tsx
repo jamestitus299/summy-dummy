@@ -22,14 +22,14 @@ export const LiveProvider = ({
   theme = defaultTheme,
   ...rest
 }: LiveProviderProps) => {
-  const { element, error, code, onChange } = useLiveRunner({
+  const { element, error, code, onChange, hasRendered } = useLiveRunner({
     initialCode,
     ...rest,
   })
 
   return (
     <LiveContext.Provider
-      value={{ element, error, code, onChange, language, theme }}
+      value={{ element, error, code, onChange, hasRendered, language, theme }}
     >
       {children}
     </LiveContext.Provider>

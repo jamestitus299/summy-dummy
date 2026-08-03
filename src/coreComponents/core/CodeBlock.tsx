@@ -1,5 +1,5 @@
 import React, { ComponentPropsWithoutRef, CSSProperties, Fragment } from 'react'
-import Highlight, { Prism as defaultPrism } from 'prism-react-renderer'
+import { Highlight, Prism as defaultPrism } from 'prism-react-renderer'
 
 import { Language, Theme, PrismLib } from './types'
 import defaultTheme from './defaultTheme'
@@ -33,18 +33,20 @@ export const CodeBlock = ({
         <Highlight
             code={children || ''}
             language={language}
-            Prism={Prism}
+            prism={Prism}
             theme={theme}
         >
             {({ className, style, tokens, getLineProps, getTokenProps }) => {
                 const children = tokens.map((line, i) => {
-                    const { key: lineKey, ...restLineProps } = getLineProps({ line, key: i })
+                    // Destructure the key from line props
+                    const { key: lineKey, ...restLineProps } = getLineProps({ line, key: i });
                     return (
-                        <Fragment key={lineKey}>
+                        <Fragment key={lineKey as React.Key}>
                             <span {...restLineProps}>
                                 {line.map((token, key) => {
-                                    const { key: tokenKey, ...restTokenProps } = getTokenProps({ token, key })
-                                    return <span key={tokenKey} {...restTokenProps} />
+                                    // Destructure the key from token props
+                                    const { key: tokenKey, ...restTokenProps } = getTokenProps({ token, key });
+                                    return <span key={tokenKey as React.Key} {...restTokenProps} />;
                                 })}
                             </span>
                             {'\n'}
@@ -52,7 +54,7 @@ export const CodeBlock = ({
                     )
                 })
 
-                if (noWrapper) return children
+                if (noWrapper) return <>{children}</>
 
                 const wrapperStyle: CSSProperties = {
                     margin: 0,

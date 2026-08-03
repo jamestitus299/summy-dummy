@@ -1,93 +1,112 @@
 {
   "name": "react-code-canvas",
-  "version": "4.0.1",
-  "type": "module",
+  "version": "5.0.0",
+  "packageManager": "bun@1.3.14",
   "sideEffects": false,
-  "description": "Package to run and preview React code with live editing capabilities in a browser.",
+  "description": "A browser-based canvas for rendering React components at runtime",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js"
+    }
+  },
   "files": [
-    "dist"
+    "dist",
+    "skills"
   ],
   "scripts": {
-    "dev": "storybook dev -p 6006",
-    "build": "rollup -c",
-    "size": "size-limit",
-    "prepare": "npm run build",
+    "dev": "bun run storybook",
+    "build": "bun run generate:scopes && rm -rf dist && rollup -c",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:manual:transformer": "bun run scripts/manual/test-custom-transformer.js",
+    "test:manual:analyzer": "bun run scripts/manual/test-analyze-react-code.js",
+    "size": "bun run build && size-limit",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "jest"
+    "docs:install": "bun install --cwd doc_site",
+    "docs:dev": "bun run docs:install && bun --cwd doc_site start",
+    "docs:build": "bun run docs:install && bun --cwd doc_site build",
+    "docs:serve": "bun run docs:install && bun --cwd doc_site serve",
+    "clean": "rm -rf node_modules dist .cache storybook-static coverage bundle-analysis.html doc_site/node_modules doc_site/build doc_site/.docusaurus",
+    "reinstall": "rm -rf node_modules && bun install",
+    "prepublishOnly": "bun run test && bun run build",
+    "generate:scopes": "bun run scripts/generate-scope-maps.mjs"
   },
   "dependencies": {
-    "@twind/core": "^1.1.3",
-    "@twind/preset-tailwind": "^1.1.4",
-    "lucide-react": "^0.475.0",
-    "prism-react-renderer": "^1.2.1",
-    "react-icons": "^5.5.0",
-    "react-simple-code-editor": "^0.13.1",
-    "recharts": "^2.15.1",
-    "sucrase": "^3.21.0",
-    "tailwind-merge": "^3.0.2"
+    "@babel/standalone": "8.0.4",
+    "@emotion/is-prop-valid": "^1.4.0",
+    "@emotion/react": "^11.14.0",
+    "lucide-react": "0.577.0",
+    "motion": "^12.43.0",
+    "prism-react-renderer": "^2.4.1",
+    "react-helmet-async": "3.0.0",
+    "react-icons": "5.7.0",
+    "react-simple-code-editor": "^0.14.1",
+    "recharts": "^3.10.1",
+    "sucrase": "^3.35.1"
   },
   "peerDependencies": {
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.28.5",
-    "@babel/preset-env": "^7.28.5",
-    "@babel/preset-react": "^7.28.5",
-    "@babel/preset-typescript": "^7.28.5",
-    "@chromatic-com/storybook": "^3.2.6",
-    "@rollup/plugin-babel": "^6.0.0",
-    "@rollup/plugin-commonjs": "^25.0.0",
+    "@babel/preset-env": "^7.29.7",
+    "@babel/preset-react": "^7.29.7",
+    "@babel/preset-typescript": "^7.29.7",
+    "@chromatic-com/storybook": "^5.2.1",
+    "@rollup/plugin-babel": "^7.1.0",
+    "@rollup/plugin-commonjs": "^29.0.3",
     "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^15.0.0",
-    "@rollup/plugin-terser": "^0.4.4",
-    "@size-limit/preset-big-lib": "^11.2.0",
-    "@storybook/addon-essentials": "^8.6.11",
-    "@storybook/addon-interactions": "^8.6.11",
-    "@storybook/addon-links": "^8.6.11",
-    "@storybook/addon-onboarding": "^8.6.11",
-    "@storybook/addon-webpack5-compiler-babel": "^3.0.5",
-    "@storybook/addon-webpack5-compiler-swc": "^3.0.0",
-    "@storybook/blocks": "^8.6.11",
-    "@storybook/react": "^8.6.11",
-    "@storybook/react-vite": "^8.6.11",
-    "@storybook/react-webpack5": "^8.6.11",
-    "@storybook/test": "^8.6.11",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-terser": "^1.0.0",
+    "@size-limit/preset-big-lib": "^13.0.2",
+    "@storybook/addon-links": "^10.5.5",
+    "@storybook/addon-onboarding": "^10.5.5",
+    "@storybook/addon-webpack5-compiler-babel": "^4.0.1",
+    "@storybook/addon-webpack5-compiler-swc": "^4.0.3",
+    "@storybook/react": "^10.5.5",
+    "@storybook/react-vite": "^10.5.5",
+    "@storybook/react-webpack5": "^10.5.5",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
     "@types/jest": "^30.0.0",
-    "@types/react": "^18.3.18",
+    "@types/react": "^19.2.17",
     "@types/react-helmet": "^6.1.11",
-    "babel-jest": "^30.2.0",
-    "jest": "^30.2.0",
-    "jest-environment-jsdom": "^30.2.0",
-    "package-size": "^1.0.2",
+    "babel-jest": "^30.4.1",
+    "jest": "^30.4.2",
+    "jest-environment-jsdom": "^30.4.1",
+    "package-size": "^2.3.0",
     "path": "^0.12.7",
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0",
-    "react-helmet": "^6.1.0",
-    "rollup": "^3.25.0",
-    "rollup-plugin-import-css": "^4.1.2",
-    "rollup-plugin-typescript2": "^0.35.0",
-    "rollup-plugin-visualizer": "^5.14.0",
-    "size-limit": "^11.2.0",
-    "storybook": "^8.6.11"
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "rollup": "^4.62.3",
+    "rollup-plugin-import-css": "^4.2.1",
+    "rollup-plugin-typescript2": "^0.37.0",
+    "rollup-plugin-visualizer": "^7.0.1",
+    "size-limit": "^13.0.2",
+    "storybook": "^10.5.5",
+    "@storybook/addon-mcp": "^0.7.0",
+    "@storybook/addon-docs": "^10.5.5"
   },
   "overrides": {
     "typescript": "^5.8.2"
   },
   "size-limit": [
     {
-      "path": "dist/index.js",
-      "limit": "250 KB"
+      "name": "ReactCanvas (what a consumer actually loads)",
+      "path": "dist/index.esm.js",
+      "import": "{ ReactCanvas }",
+      "limit": "120 kB"
     },
     {
-      "path": "dist/index.esm.js",
-      "limit": "250 KB"
+      "name": "cjs entry",
+      "path": "dist/index.js",
+      "limit": "140 kB"
     }
   ],
   "keywords": [
@@ -97,12 +116,20 @@
     "code-editor"
   ],
   "author": "James Titus",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jamestitus299/summy-dummy.git"
+    "url": "https://github.com/jamestitus299/react-code-canvas.git"
   },
   "bugs": {
-    "url": "https://github.com/jamestitus299/summy-dummy.git/issues"
+    "url": "https://github.com/jamestitus299/react-code-canvas.git/issues"
   },
-  "homepage": "https://github.com/jamestitus299/summy-dummy.git#readme"
+  "homepage": "https://github.com/jamestitus299/react-code-canvas.git#readme",
+  "trustedDependencies": [
+    "@swc/core",
+    "ejs",
+    "esbuild",
+    "fsevents",
+    "unrs-resolver"
+  ]
 }

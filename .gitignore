@@ -1,13 +1,18 @@
 # dependencies
 /node_modules
+/doc_site/node_modules
 /.pnp
 .pnp.js
+package-lock.json
 
 # testing
 /coverage
 
-# production
+# build
 /dist
+/storybook-static
+/doc_site/.docusaurus
+/doc_site/build
 
 # misc
 .DS_Store
@@ -22,4 +27,7 @@ yarn-error.log*
 
 *storybook.log
 
-*.html
+bundle-analysis.html
+
+# Agent
+.claude/

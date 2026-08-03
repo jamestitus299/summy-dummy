@@ -4,8 +4,9 @@ import { generateElement } from './utils'
 import { RunnerOptions, Scope } from './types'
 
 export type RunnerProps = RunnerOptions & {
-  /** callback on code be rendered, returns error message when code is invalid */
-  onRendered?: (error?: Error) => void
+  /** callback on code be rendered, returns error message when code is invalid.
+   * `hasElement` reports whether real (non-null) content was produced. */
+  onRendered?: (error?: Error, hasElement?: boolean) => void
 }
 
 type RunnerState = {
@@ -54,7 +55,7 @@ export class Runner extends Component<RunnerProps, RunnerState> {
   }
 
   componentDidMount() {
-    this.props.onRendered?.(this.state.error || undefined)
+    this.props.onRendered?.(this.state.error || undefined, !!this.state.element)
   }
 
   shouldComponentUpdate(nextProps: RunnerProps, nextState: RunnerState) {
@@ -66,7 +67,7 @@ export class Runner extends Component<RunnerProps, RunnerState> {
   }
 
   componentDidUpdate() {
-    this.props.onRendered?.(this.state.error || undefined)
+    this.props.onRendered?.(this.state.error || undefined, !!this.state.element)
   }
 
   render() {

@@ -1,32 +1,47 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 
-import { install } from "@twind/core";
-import presetTailwind from "@twind/preset-tailwind";
-
 import { LiveProvider } from "./core/LiveProvider";
-import { LiveEditor } from "./core/LiveEditor";
+import { LazyLiveEditor } from "./core/LazyLiveEditor";
 import { LiveError } from "./core/LiveError";
 import { LivePreview } from "./core/LivePreview";
+import { LiveLoadingOverlay } from "./core/LiveLoadingOverlay";
 
-import { scope as defaultscope } from "../scopes/Scope";
+import { readStored, writeStored } from "./core/storage";
 
 import {
     transformJSXTextToEditableText,
     transformEditableTextToJSX,
     applyPatchesToAst,
+    loadTransformer,
 } from "../coreComponents/core/custom-transformer";
 
-const TWIND_FLAG = "__TWIND_INIT__";
-
-export interface ReactCanvasProps {
+export interface EditReactCanvasProps {
     code: string;
     scope?: Record<string, any>;
     showPreview?: boolean;
     showEditor?: boolean;
     showError?: boolean;
 
-    // NEW: call parent when final JSX is saved
+    // call parent when final JSX is saved - external callback
     onSaveFinalCode?: (jsxCode: string) => void;
+    onError?: (error: string) => void;
+
+    /** localStorage key to persist the final saved JSX across reloads; omit to disable */
+    persistKey?: string;
+    /** called whenever the final JSX changes (alongside onSaveFinalCode) */
+    onCodeChange?: (jsxCode: string) => void;
+    /** full-page overlay shown until the first successful render. Defaults to
+     * `!showEditor` -- see the same note on ReactCanvasProps.showLoader. */
+    showLoader?: boolean;
+    /** replace the default spinner overlay with a custom node */
+    loader?: React.ReactNode;
+    /** replaces the built-in error toast. Pass a node, or a function receiving
+     * the error message. Requires `showError`. */
+    errorComponent?:
+        | React.ReactNode
+        | ((error: string, dismiss: () => void) => React.ReactNode);
+    /** show a dismiss button on the built-in error toast; true by default */
+    dismissibleError?: boolean;
 }
 
 export default function EditReactCanvas({
@@ -36,9 +51,15 @@ export default function EditReactCanvas({
     showEditor = false,
     showError = false,
     onSaveFinalCode,
-}: ReactCanvasProps) {
-    // STATE
-    const [mode, setMode] = useState<"view" | "edit">("view");
+    onError,
+    persistKey,
+    onCodeChange,
+    showLoader = !showEditor,
+    loader,
+    errorComponent,
+    dismissibleError = true,
+}: EditReactCanvasProps) {
+    const [mode, setMode] = useState<"view" | "edit">("edit");
     const [editableCode, setEditableCode] = useState(code);
     const [ast, setAst] = useState<any>(null);
     const [patches, setPatches] = useState<Record<string, string>>({});
@@ -48,17 +69,8 @@ export default function EditReactCanvas({
     //     console.log("PATCHES UPDATED:", patches);
     // }, [patches]);
 
-    // Tailwind css - twind
-    useEffect(() => {
-        if (typeof window === "undefined") return;
-        if (!(window as any)[TWIND_FLAG]) {
-            install({ presets: [presetTailwind()] }, true);
-            (window as any)[TWIND_FLAG] = true;
-        }
-    }, []);
-
-    // EXPOSE A HANDLER FOR EDITABLETEXT  PATCHES
-    // EditableText uses this to report changes
+    // expose a callback for edittext patches
+    // EditableText uses this to patch changes
     const registerPatch = useCallback((textNodeId: string, newText: string) => {
         setPatches((prev) => ({
             ...prev,
@@ -66,75 +78,124 @@ export default function EditReactCanvas({
         }));
     }, []);
 
+    // save whenever patches change
+    useEffect(() => {
+        if (mode === "edit" && Object.keys(patches).length > 0) {
+            saveChanges();
+        }
+    }, [patches]);
+
+    // Caller additions only; the base scope and the lucide/recharts/motion
+    // groups the code references are loaded on demand by useResolvedScope.
     const finalScope = useMemo(
         () => ({
-            ...defaultscope,
-            ...scope,
-            __applyEditableTextPatch: registerPatch, // expose to EditableText
+            ...(scope ?? {}),
+            __applyEditableTextPatch: registerPatch, // expose to EditableText, apply edit patches callback
         }),
         [scope, registerPatch]
     );
 
-    // HANDLE EDIT MODE
+    // set up edit mode
     const startEditing = () => {
-        // console.log(code)
+        // Restore a previously persisted final JSX if present, else use the prop.
+        const sourceCode = readStored(persistKey) ?? code;
         //@ts-ignore
-        const { transformedCode, ast: parsedAst } =
-            transformJSXTextToEditableText(code);
-
+        const { transformedCode, ast, error } = transformJSXTextToEditableText(sourceCode);
+        // if error - onError callback if exist, return
+        if (error) {
+            if (onError) {
+                onError(error);
+            }
+            return
+        }
         // console.log(transformedCode)
         // console.log(ast)
 
         setEditableCode(transformedCode);
-        setAst(parsedAst);
+        setAst(ast);
         setPatches({});
         setMode("edit");
     };
 
-    // ===== HANDLE SAVE MODE =====
+    // Start edit mode on mount - edit mode by default.
+    // @babel/standalone is loaded on demand (it is ~1.5MB and only this
+    // component needs it), so wait for it before transforming.
+    useEffect(() => {
+        let cancelled = false;
+        loadTransformer()
+            .then(() => {
+                if (!cancelled) startEditing();
+            })
+            .catch((err: unknown) => {
+                if (!cancelled) onError?.(err instanceof Error ? err.message : String(err));
+            });
+        return () => {
+            cancelled = true;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+
+    // handle changes on save - apply patches
     const saveChanges = () => {
         if (!ast) return;
 
         // Apply patches to the stored AST
-        const patchedCode = applyPatchesToAst(ast, patches);
+        //@ts-ignore
+        var { transformedCode, error } = applyPatchesToAst(ast, patches);
+        if (error) {
+            if (onError) {
+                // Check if it's an Error object, otherwise cast to string
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                onError(errorMessage);
+            }
+            return
+        }
 
         // Convert EditableText JSX back to plain JSX
-        const cleanJsx = transformEditableTextToJSX(patchedCode);
+        //@ts-ignore
+        var { transformedCode, error } = transformEditableTextToJSX(transformedCode);
+        if (error) {
+            if (onError) {
+                onError(error);
+            }
+            return
+        }
 
-        // Update editor
-        setEditableCode(cleanJsx);
-        setMode("view");
+        // persist the final JSX and notify listeners
+        writeStored(persistKey, transformedCode);
+        onCodeChange?.(transformedCode);
 
         // final code save callback - ext
-        if (onSaveFinalCode) onSaveFinalCode(cleanJsx);
+        if (onSaveFinalCode) onSaveFinalCode(transformedCode);
     };
 
-    return (
-        <div className="border rounded-lg p-4 space-y-2">
-            {/* === Buttons === */}
-            <div className="flex gap-2 mb-2">
-                {mode === "view" ? (
-                    <button
-                        className="px-3 py-1 bg-blue-500 text-white rounded"
-                        onClick={startEditing}
-                    >
-                        Edit
-                    </button>
-                ) : (
-                    <button
-                        className="px-3 py-1 bg-green-600 text-white rounded"
-                        onClick={saveChanges}
-                    >
-                        Save
-                    </button>
-                )}
-            </div>
+    const renderError = errorComponent
+        ? (message: string, dismiss: () => void) =>
+            typeof errorComponent === "function"
+                ? errorComponent(message, dismiss)
+                : errorComponent
+        : undefined;
 
-            {/* === Live Preview Editor === */}
-            <LiveProvider code={editableCode} scope={finalScope}>
-                {showPreview && <LivePreview />}
-                {showError && <LiveError />}
-                {showEditor && <LiveEditor />}
+    return (
+        // `relative` is kept so a caller overriding the toast via containerStyle to
+        // position:absolute anchors it to the canvas rather than the page.
+        <div style={{ position: "relative" }}>
+            <LiveProvider
+                code={editableCode}
+                scope={finalScope}
+                onError={onError}
+                deferFirstRender={showLoader}
+            >
+                {showLoader && (
+                    <LiveLoadingOverlay
+                        id="react-code-loader"
+                        render={loader ? () => loader : undefined}
+                    />
+                )}
+                {showPreview && <LivePreview id="react-code-canas-edit-text" />}
+                {showError && <LiveError id="react-code-error" render={renderError} dismissible={dismissibleError} />}
+                {showEditor && <LazyLiveEditor />}
             </LiveProvider>
         </div>
     );

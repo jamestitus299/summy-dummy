@@ -1,17 +1,10 @@
 import React, { useEffect, useMemo } from "react";
 
-import { install } from "@twind/core";
-import presetTailwind from "@twind/preset-tailwind";
-
 import { LiveProvider } from "./core/LiveProvider";
-import { LiveEditor } from "./core/LiveEditor";
+import { LazyLiveEditor } from "./core/LazyLiveEditor";
 import { LiveError } from "./core/LiveError";
 import { LivePreview } from "./core/LivePreview";
-
-import { scope as defaultscope } from "../scopes/Scope";
-
-// Tailwind flag
-const TWIND_FLAG = "__TWIND_INIT__";
+import { LiveLoadingOverlay } from "./core/LiveLoadingOverlay";
 
 export interface ReactCanvasProps {
   code: string;
@@ -19,6 +12,31 @@ export interface ReactCanvasProps {
   showPreview?: boolean;
   showEditor?: boolean;
   showError?: boolean;
+  /** localStorage key to persist edited code across page reloads; omit to disable */
+  persistKey?: string;
+  /** called whenever the code changes in the editor */
+  onCodeChange?: (code: string) => void;
+  /** full-page overlay shown until the first successful render. Defaults to
+   * `!showEditor` -- the overlay is `position: fixed; inset: 0`, so it covers
+   * the editor too; if it defaulted to on with an editor visible, the very
+   * first (near-certain to be incomplete/invalid) keystroke into an empty
+   * canvas would block the whole screen, editor included, until valid code
+   * exists. Pass explicitly to override either way. */
+  showLoader?: boolean;
+  /** replace the default spinner overlay with a custom node */
+  loader?: React.ReactNode;
+  /** called whenever non-empty code fails to produce output: it threw, or it
+   * evaluated cleanly and rendered nothing. Fires independently of
+   * `showError`, which only controls whether the message is displayed.
+   * See useRunner for the per-case reporting frequency. */
+  onError?: (error: string) => void;
+  /** replaces the built-in error toast. Pass a node, or a function receiving
+   * the error message. Requires `showError`. */
+  errorComponent?:
+      | React.ReactNode
+      | ((error: string, dismiss: () => void) => React.ReactNode);
+  /** show a dismiss button on the built-in error toast; true by default */
+  dismissibleError?: boolean;
 }
 
 export default function ReactCanvas({
@@ -27,39 +45,51 @@ export default function ReactCanvas({
   showPreview = true,
   showEditor = false,
   showError = false,
+  persistKey,
+  onCodeChange,
+  showLoader = !showEditor,
+  loader,
+  onError,
+  errorComponent,
+  dismissibleError = true,
 }: ReactCanvasProps) {
-  // Safe client-only initialization of Twind (runs once)
-  useEffect(() => {
-    if (typeof window === "undefined") return; // SSR guard
-    try {
-      if (!(window as any)[TWIND_FLAG]) {
-        install(
-          {
-            presets: [presetTailwind()],
-          },
-          true
-        );
-        (window as any)[TWIND_FLAG] = true;
-      }
-    } catch (err) {
-      // if (process.env.NODE_ENV === "development") {
-      //   // eslint-disable-next-line no-console
-      //   console.warn("Twind init failed or already initialized:", err);
-      // }
-    }
-  }, []);
 
-  // Merge scopes; only depend on `scope` so memo is stable.
-  const finalScope = useMemo(() => {
-    return { ...defaultscope, ...(scope ?? {}) };
-  }, [scope]);
+  // Only the caller's additions. The base scope, and the lucide/recharts/motion
+  // groups the code actually references, are loaded on demand by
+  // useResolvedScope -- memoised here so that resolution is not re-run on every
+  // render by an inline object literal.
+  const finalScope = useMemo(() => scope ?? {}, [scope]);
+
+  const renderError = errorComponent
+    ? (message: string, dismiss: () => void) =>
+        typeof errorComponent === "function"
+          ? errorComponent(message, dismiss)
+          : errorComponent
+    : undefined;
 
   return (
-    <div id="react-code-canvas">
-      <LiveProvider code={code} scope={finalScope}>
-        {showPreview && <LivePreview />}
-        {showError && <LiveError />}
-        {showEditor && <LiveEditor />}
+    // `relative` is kept so a caller overriding the toast via containerStyle to
+    // position:absolute anchors it to the canvas rather than the page.
+    <div style={{ position: "relative" }}>
+      <LiveProvider
+        code={code}
+        scope={finalScope}
+        persistKey={persistKey}
+        onCodeChange={onCodeChange}
+        onError={onError}
+        // Only pay the extra macrotask when a loader will actually be painted
+        // during it.
+        deferFirstRender={showLoader}
+      >
+        {showLoader && (
+          <LiveLoadingOverlay
+            id="react-code-loader"
+            render={loader ? () => loader : undefined}
+          />
+        )}
+        {showPreview && <LivePreview id="react-code-canvas" />}
+        {showError && <LiveError id="react-code-error" render={renderError} dismissible={dismissibleError} />}
+        {showEditor && <LazyLiveEditor />}
       </LiveProvider>
     </div>
   );

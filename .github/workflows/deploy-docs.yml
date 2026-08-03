@@ -2,7 +2,7 @@ name: Deploy Docs
 
 on:
   push:
-    branches: [master, dev-j]
+    branches: [master]
   workflow_dispatch:
 
 permissions:

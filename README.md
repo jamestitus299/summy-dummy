@@ -110,7 +110,7 @@ import { EditTextReactCanvas } from "react-code-canvas";
 
 - Code should export a default component, for example `export default function ComponentName() {}`.
 - Do not include import statements in rendered code. Inject dependencies through the `scope` prop.
-- Common scoped libraries include `recharts`, `lucide-react`, `motion/react`, and `react-helmet-async`. Icons come from `lucide-react`; `react-icons/fa` was removed in 4.2.x because it added ~424KB gzipped duplicating lucide's coverage.
+- The default scope ships React, its hooks and `react-helmet-async` up front, and lazily fetches `lucide-react` (~0.8KB gz per icon), `recharts` (~145KB gz), `motion/react` (~61KB gz) and `react-icons/fa` (~420KB gz) only when the code mentions a name from that group. Prefer lucide icons — one `Fa*` reference pulls the entire Font Awesome pack, which has no per-icon files. See [Scope](doc_site/docs/scope.md).
 - Empty or whitespace-only `code` renders nothing at all — no output and no loader.
 - The built-in error toast keeps the message in `#react-code-error`. If you replace it with `errorComponent` and rely on scraping that element (for example from a headless browser), keep the id on a statically positioned element — `offsetParent` is `null` on `position: fixed` elements.
 - `errorComponent` takes an **element or a render function**, not a component type. Passing the component itself (`errorComponent={MyToast}`) calls it with the message string in place of props, so it renders blank with no warning. Use `errorComponent={(message, dismiss) => <MyToast message={message} onDismiss={dismiss} />}` — the second argument wires your own close control to the same per-message dismissal the built-in toast uses.

@@ -9,11 +9,11 @@ mechanism changes, the rule may too.
 Before evaluating your code, the canvas scans the **entire source string** with an
 identifier regex and loads what it finds:
 
-- a lucide icon name → one dynamic import, ~0.7 KB for that icon's file
-- any recharts name → the whole recharts library (~138 KB) in one import
-- any motion name → the whole motion library in one import
-- any `Fa*` (Font Awesome) name → the whole `react-icons/fa` pack (~124 KB gz) in
-  one import — there are no per-icon files to split
+- a lucide icon name → one dynamic import, ~0.8 KB gz for that icon's file
+- any recharts name → the whole recharts library (~145 KB gz) in one import
+- any motion name → the whole motion library (~61 KB gz) in one import
+- any `Fa*` (Font Awesome) name → the whole `react-icons/fa` pack (~420 KB gz,
+  1.3 MB raw) in one import — there are no per-icon files to split
 
 All fetches run in parallel, and the browser caches modules, so a name is only
 paid for once per session. The scan is a plain regex: it cannot tell code from
@@ -22,15 +22,15 @@ comments or string literals. A name **anywhere** in the source triggers its load
 Evaluation is `new Function(...scopeNames, code)` — synchronous, on the main
 thread, re-run on **every** code change and after every failed-edit recovery.
 
-## Rule 1 — lucide over Font Awesome (~175x cheaper)
+## Rule 1 — lucide over Font Awesome (~500x cheaper)
 
 ```jsx
-// ❌ 124 KB: the single Fa reference fetches the whole pack
+// ❌ 420 KB gz: the single Fa reference fetches the whole pack
 export default function ProfileBadge() {
   return <div><FaUser size={18}/> Signed in</div>;
 }
 
-// ✅ 0.7 KB: per-icon file
+// ✅ 0.8 KB gz: per-icon file
 export default function ProfileBadge() {
   return <div><User size={18}/> Signed in</div>;
 }
@@ -47,7 +47,7 @@ pack is a single fetch. Mixing sets on one page pays both loaders; pick one.
 ## Rule 2 — library names in comments and strings still cost
 
 ```jsx
-// ❌ this comment costs ~138 KB — "LineChart" matches the recharts name list
+// ❌ this comment costs ~145 KB gz — "LineChart" matches the recharts name list
 // TODO: maybe swap this table for a LineChart later
 export default function StatsTable() { ... }
 
@@ -61,7 +61,7 @@ const hint = "Upgrade to see the chart view";
 
 Over-matching is deliberate in the canvas (a wasted fetch is harmless; a missed
 one breaks the render), so the author side of the contract is: don't spell scope
-names you don't use. Icon names in comments cost only ~0.7 KB — the rule matters
+names you don't use. Icon names in comments cost only ~0.8 KB gz — the rule matters
 for **recharts, motion, and `Fa*`**, where one word is a whole library.
 
 ## Rule 3 — module level runs on every evaluation

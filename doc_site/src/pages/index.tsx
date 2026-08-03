@@ -77,16 +77,11 @@ export default function Home(): JSX.Element {
           <div className="container">
             <div className={styles.heroInner}>
               <div className={styles.heroCopy}>
-                <p className={styles.eyebrow}>React rendering toolkit</p>
                 <Heading as="h1" className={styles.title}>
-                  Render React components.
-                  <br />
-                  <span className={styles.titleAccent}>Edit text content live.</span>
+                  React Code Canvas
                 </Heading>
                 <p className={styles.subtitle}>
-                  <code>react-code-canvas</code> gives your app a controlled way to
-                  preview, validate, and text-edit React UI generated from code
-                  strings — with an explicit scope and zero imports in user code.
+                  A browser-based canvas for rendering React components at runtime.
                 </p>
 
                 <div className={styles.install}>

@@ -25,8 +25,10 @@ export interface ReactCanvasProps {
   showLoader?: boolean;
   /** replace the default spinner overlay with a custom node */
   loader?: React.ReactNode;
-  /** called when non-empty code evaluates cleanly but renders nothing (in
-   * addition to the error being shown via LiveError) */
+  /** called whenever non-empty code fails to produce output: it threw, or it
+   * evaluated cleanly and rendered nothing. Fires independently of
+   * `showError`, which only controls whether the message is displayed.
+   * See useRunner for the per-case reporting frequency. */
   onError?: (error: string) => void;
   /** replaces the built-in error toast. Pass a node, or a function receiving
    * the error message. Requires `showError`. */

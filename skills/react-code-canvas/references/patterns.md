@@ -26,7 +26,7 @@ export default function LandingPage() {
 }
 ```
 
-Loads: two ~0.7 KB icon files. Nothing else.
+Loads: two ~0.8 KB gz icon files. Nothing else.
 
 ## Interactive page (hooks are free — they're base scope)
 
@@ -87,7 +87,7 @@ export default function RevenuePage() {
 ```
 
 Referencing one recharts name loads the whole library, so a page either charts or
-it doesn't — a lone `<Tooltip>` outside a chart tree costs the same 138 KB and is
+it doesn't — a lone `<Tooltip>` outside a chart tree costs the same 145 KB and is
 a collision bug besides (SKILL.md .4). `REVENUE` at module level is fine: it is
 data, not work.
 
@@ -158,7 +158,7 @@ export default function ProductsPage() {
 
 ```jsx
 // Pre-5.0 stored page. Every Fa* name resolves; the first one loads the whole
-// ~124 KB pack. Correct move when editing such a page: migrate the icons to
+// ~420 KB gz pack. Correct move when editing such a page: migrate the icons to
 // lucide (FaUser -> User, FaHome -> House, ...) rather than extending the Fa set.
 export default function LegacyProfile() {
   return (

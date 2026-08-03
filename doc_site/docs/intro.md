@@ -15,12 +15,13 @@ Use it when your application needs to:
 - Validate code and capture render errors.
 - Let users edit rendered text content and receive updated JSX.
 
-## Public Components
+## Public API
 
-| Component | Purpose |
+| Export | Purpose |
 | --- | --- |
 | `ReactCanvas` | Renders component code with optional preview, editor, and error output. |
 | `EditTextReactCanvas` | Renders component code with text editing behavior. |
+| `analyzeReactCode` | Static analysis of a code string. No DOM and no render, so it runs in Node — for CI, batch audits and migrations. |
 
 ## Core Idea
 

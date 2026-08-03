@@ -34,7 +34,7 @@ import { ReactCanvas } from 'react-code-canvas';
 | `onCodeChange` | `(code: string) => void` | Called whenever the code changes in the editor. |
 | `showLoader` | `boolean` | Shows a full-screen overlay while non-empty code has not produced output yet. Defaults to `!showEditor`. |
 | `loader` | `React.ReactNode` | Replaces the default spinner with your own node. |
-| `onError` | `(error: string) => void` | Called when non-empty code evaluates without throwing but never renders anything. |
+| `onError` | `(error: string) => void` | Called whenever non-empty code fails to produce output — it threw, **or** it evaluated cleanly and never rendered anything. |
 
 ## Persisting code
 
@@ -82,16 +82,13 @@ Swap the spinner for your own node with `loader`. It is subject to the same visi
 
 ### How the loader gets a chance to appear
 
-Transform and evaluation are **synchronous**. Left alone, the first commit would already contain the finished output, and the browser would never paint a loading state — you would see nothing, then content.
+Transform and evaluation are synchronous, but they cannot start until the code's scope has loaded — and scope resolution is async (see [Scope](./scope.md)). The canvas evaluates only code whose dependencies have finished arriving, which before the first resolve is the empty string.
 
-So when `showLoader` is on, the canvas defers the *initial* evaluation by one macrotask: it commits the empty pending state, lets the browser paint the loader, then compiles and evaluates. That costs one extra tick on mount and is why the loader is visible even for fast code.
+So the first commit renders nothing regardless of `showLoader`, and that is the window the overlay paints in. Consequences:
 
-Two consequences worth knowing:
-
-- **Output is no longer present in the first commit.** With `showLoader` on, `code` is evaluated just after mount rather than during it. Tests that mount and immediately assert on rendered output need to flush a tick first, or pass `showLoader={false}`.
-- **Only the first evaluation is deferred.** Later code changes — every editor keystroke — are evaluated synchronously, so typing does not flash the loader.
-
-`showLoader={false}` skips the deferral entirely and keeps the original fully synchronous behavior.
+- **Output is never present in the first commit.** Tests that mount and immediately assert on rendered output must flush at least a microtask, whatever `showLoader` is set to. `showLoader={false}` removes the overlay, not the wait.
+- **The window can be very short.** With every module already in the browser's cache, resolution settles in a microtask and the overlay may never get a frame. It is not a guaranteed paint.
+- **Later edits do not blank the preview.** While a new code string's scope is in flight the previous code keeps rendering, so typing never flashes the loader or a `ReferenceError` for an icon still being fetched.
 
 The overlay never appears for empty or whitespace-only `code` (which renders nothing at all), nor once an error is present — an error is a resolved outcome, and covering it with a spinner would hide the explanation.
 
@@ -101,19 +98,24 @@ It is also not a general "waiting for data" indicator. If you fetch code asynchr
 {isFetching ? <MySkeleton /> : <ReactCanvas code={code} />}
 ```
 
-## Reporting code that renders nothing
+## Reporting failures
 
-Code can be valid JavaScript and still produce no component — for example if it never calls `render(...)` and has no default export. That is not a compile error, so nothing is thrown, and without `onError` it fails silently.
+`onError` covers **both** ways code can fail to produce output:
+
+- **It threw** — a compile error or a runtime error during evaluation. Reported every time it happens, because each is a distinct failure a host may need to react to.
+- **It rendered nothing** — valid JavaScript that never calls `render(...)` and has no default export. Nothing is thrown, so without `onError` this fails silently. Reported at most once per mount, so editor keystrokes through a half-written component do not spam it.
 
 ```tsx
 <ReactCanvas
   code={code}
   showError
-  onError={(message) => console.warn(message)} // "Code did not render anything"
+  onError={(message) => console.warn(message)} // e.g. "Code did not render anything"
 />;
 ```
 
-This is reported synchronously, as soon as evaluation returns, and at most once per mount so editor keystrokes do not spam it. Genuine compile and runtime errors are surfaced separately through `showError` and are never replaced by this message.
+Both are reported synchronously, as soon as evaluation returns. `showError` controls whether the message is also *displayed*; `onError` fires either way.
+
+This is what a host uses to swap in a fallback page — it needs the throws, not just the silent case.
 
 ## Showing errors
 

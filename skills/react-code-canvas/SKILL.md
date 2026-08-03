@@ -1,8 +1,8 @@
 ---
 name: react-code-canvas
 metadata:
-  version: 0.0.2
-  library-version: ">=5.0.0-beta.3"
+  version: 0.0.3
+  library-version: "^5.0.0"
 description: "Constraints for authoring React component code that will be rendered by react-code-canvas (ReactCanvas / EditTextReactCanvas). Use whenever generating, editing, reviewing, or validating a code string that gets passed to the canvas as its `code` prop — including LLM prompt construction in the host app. Covers the injected scope, forbidden patterns, entry shape, name collisions, performance rules, and programmatic validation."
 ---
 
@@ -59,10 +59,10 @@ export default function Page() {
 | Group | Names | Load cost when referenced |
 |---|---|---|
 | React | `React`, `useState`, `useEffect`, `useContext`, `useReducer`, `useRef`, `useMemo`, `useCallback` | free (base) |
-| Icons (preferred) | all **5841** `lucide-react` exports, e.g. `<Activity/>`, `<User/>`, `<ChevronRight/>` | ~0.7 KB per icon |
-| Icons (legacy) | all **1611** `react-icons/fa` exports, e.g. `<FaUser/>`, `<FaHome/>` | **whole pack, ~124 KB gz** — one `Fa*` name fetches all of it |
-| Charts | all **101** `recharts` exports, e.g. `ResponsiveContainer`, `LineChart`, `XAxis`, `CartesianGrid` | whole library, ~138 KB |
-| Animation | `motion` (as `<motion.div>`) plus motion's **383** hooks/components | whole library |
+| Icons (preferred) | all **5841** `lucide-react` exports, e.g. `<Activity/>`, `<User/>`, `<ChevronRight/>` | ~0.8 KB gz per icon |
+| Icons (legacy) | all **1611** `react-icons/fa` exports, e.g. `<FaUser/>`, `<FaHome/>` | **whole pack, ~420 KB gz** — one `Fa*` name fetches all of it |
+| Charts | all **101** `recharts` exports, e.g. `ResponsiveContainer`, `LineChart`, `XAxis`, `CartesianGrid` | whole library, ~145 KB gz |
+| Animation | `motion` (as `<motion.div>`) plus motion's **383** hooks/components | whole library, ~61 KB gz |
 | Head | `Helmet`, `HelmetProvider` | free (base) |
 | Entry | `render`, `exports`, `require` | free (base) |
 
@@ -212,12 +212,12 @@ re-evaluated on every change — so authoring choices are directly load-time and
 main-thread choices. The rules that matter, in order of cost:
 
 1. **Never emit an `Fa*` name unless the page already uses Font Awesome.** One
-   `Fa*` reference fetches the whole ~124 KB pack; the lucide equivalent is one
-   ~0.7 KB file. `FaUser` → `User`, `FaHome` → `House`.
+   `Fa*` reference fetches the whole ~420 KB gz pack; the lucide equivalent is
+   one ~0.8 KB file. `FaUser` → `User`, `FaHome` → `House`.
 2. **Do not mention chart/animation names you don't render.** The scanner is a
-   regex over the whole source — `recharts` (~138 KB) and `motion` load even when
-   the name only appears in a **comment or string literal**. `// like a LineChart`
-   costs 138 KB.
+   regex over the whole source — `recharts` (~145 KB gz) and `motion` (~61 KB gz)
+   load even when the name only appears in a **comment or string literal**.
+   `// like a LineChart` costs 145 KB.
 3. **Keep module level empty.** Top-level statements re-run on every evaluation,
    including the re-execution after a failed edit. Constants are fine; work is not.
 4. **Render the shell before the data.** The canvas paints as soon as evaluation

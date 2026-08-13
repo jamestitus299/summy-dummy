@@ -4,7 +4,7 @@ Agent instructions for working in this repository. Read this before making chang
 
 ## What this project is
 
-**`react-code-canvas`** is a published React/TypeScript **library** (npm package, currently `4.2.0-beta.18`). It provides a browser-based canvas that **renders React components from code strings at runtime** and supports live text editing of the rendered output.
+**`react-code-canvas`** is a published React/TypeScript **library** (npm package, currently `5.0.0`). It provides a browser-based canvas that **renders React components from code strings at runtime** and supports live text editing of the rendered output.
 
 Primary use cases: previewing JSX from strings, exposing a scoped set of components/libraries to evaluated code, and validating generated React code before saving it.
 
@@ -32,11 +32,13 @@ Top-level layout (build artifacts and `node_modules` omitted):
 
 ```
 .
-├── src/                  # library source — the published code (see Architecture)
+├── src/                  # library source — the published code (see Scope resolution)
 ├── dist/                 # build output: CJS + ESM bundles + .d.ts  (gitignored)
 ├── doc_site/             # Docusaurus documentation site (own package + bun.lock)
 ├── scripts/
+│   ├── generate-scope-maps.mjs  # emits src/scopes/generated/ from node_modules
 │   └── manual/           # manual, run-by-hand scripts (e.g. transformer walkthrough)
+├── skills/               # react-code-canvas agent skill, shipped in the package
 ├── public/               # static assets (e.g. rrc.png used by the README)
 ├── storybook-static/     # built static Storybook  (gitignored)
 ├── coverage/             # jest coverage output  (gitignored)
@@ -44,7 +46,7 @@ Top-level layout (build artifacts and `node_modules` omitted):
 ├── .github/              # workflows (test, deploy-docs), issue/PR templates
 ├── rollup.config.mjs     # library bundler config
 ├── babel.config.js       # babel presets used by jest (babel-jest)
-├── jest.config.js        # currently empty → jest defaults
+├── jest.config.js        # transformIgnorePatterns: lucide-react is ESM-only, must go through babel
 ├── tsconfig.json         # TS config; emits declarations to dist/
 ├── package.json          # name, version, exports/types, scripts, deps
 ├── bun.lock              # the committed lockfile (never commit package-lock.json)
@@ -54,6 +56,26 @@ Top-level layout (build artifacts and `node_modules` omitted):
 ├── CONTRIBUTING.md / CODE_OF_CONDUCT.md / LICENSE
 └── bundle-analysis.html  # rollup-plugin-visualizer output  (gitignored via *.html)
 ```
+
+## Scope resolution
+
+`src/scopes/lazyScope.ts` is the **only** scope path. It regex-scans the code for
+identifiers and loads just what is referenced: lucide icons one file at a time,
+recharts / motion / `react-icons/fa` whole (they are not per-component
+splittable). `resolveScope` is async; `useResolvedScope` returns `readyCode` so
+code is never evaluated against a scope that has not finished loading.
+
+The name → loader tables in `src/scopes/generated/` are produced from the
+installed dependencies by `bun run generate:scopes`, which runs automatically as
+part of `bun run build`. **Never hand-edit `src/scopes/generated/`.** Import
+specifiers must be string literals or Vite/Rollup cannot split them — that is
+why the tables are generated rather than computed.
+
+The old eager scope (`src/scopes/Scope.ts` and the per-package
+`lucidreactScope` / `rechartScope` / `motionScope` modules) was removed in
+5.0.0. It spread every export of every package into one object at module load,
+forcing ~300 KB (brotli) into the first chunk and handing ~5800 parameters to
+`new Function` on every evaluation. Do not reintroduce it.
 
 ## Commands
 

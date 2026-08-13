@@ -87,7 +87,7 @@ export default function RevenuePage() {
 ```
 
 Referencing one recharts name loads the whole library, so a page either charts or
-it doesn't — a lone `<Tooltip>` outside a chart tree costs the same 145 KB and is
+it doesn't — a lone `<Tooltip>` outside a chart tree costs the same 158 KB and is
 a collision bug besides (SKILL.md .4). `REVENUE` at module level is fine: it is
 data, not work.
 

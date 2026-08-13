@@ -131,7 +131,14 @@ export async function entryFor(code: string): Promise<string> {
 const STRING_LITERALS =
   /"([^"\\]*(?:\\.[^"\\]*)*)"|'([^'\\]*(?:\\.[^'\\]*)*)'|`([^`\\]*(?:\\.[^`\\]*)*)`/g;
 
-/** Candidate class names to hand to Tailwind's `build()`. */
+/**
+ * Candidate class names to hand to Tailwind's `build()`.
+ *
+ * MUST be given transpiled JS, not raw JSX -- see candidatesFor. JSX text is not
+ * a string literal, so an apostrophe in prose ("Founder's Series") looks like an
+ * opening quote to this regex and desynchronises every quote pair after it,
+ * silently dropping the class names in the rest of the file.
+ */
 export function extractCandidates(code: string): string[] {
   const found = new Set<string>();
   for (const match of code.matchAll(STRING_LITERALS)) {
@@ -161,6 +168,19 @@ export function splitHoisted(markup: string): { head: string; body: string } {
     body = body.slice(match[0].length);
   }
   return { head, body };
+}
+
+/**
+ * The Tailwind candidates for a source file.
+ *
+ * Transpiles first, deliberately. After sucrase, JSX text is a properly quoted
+ * string literal and every className -- static, conditional, or template -- is a
+ * real string in the output, so the scan can no longer be thrown off by an
+ * apostrophe in prose. Scanning raw JSX dropped every class after the first
+ * `Founder's` in the file, which shipped a half-styled page with no error.
+ */
+export function candidatesFor(code: string): string[] {
+  return extractCandidates(transform(normalizeCode(code)));
 }
 
 export const escapeHtml = (value: string): string =>

@@ -1,4 +1,5 @@
 import {
+  candidatesFor,
   entryFor,
   extractCandidates,
   importLines,
@@ -143,6 +144,44 @@ describe('extractCandidates', () => {
 
   it('returns nothing for code with no literals', () => {
     expect(extractCandidates('export default () => <p>{x}</p>')).toEqual([])
+  })
+})
+
+describe('candidatesFor', () => {
+  // The bug this exists to prevent. JSX text is not a string literal, so an
+  // apostrophe in prose reads as an opening quote. A lone one is harmless -- it
+  // finds no partner and matches nothing -- but a SECOND apostrophe closes the
+  // fake string, and every className between the two is swallowed. Real prose
+  // has apostrophes in pairs constantly ("Founder's", "What's", "Can't"), so on
+  // a 1872-line page this silently dropped whole sections of the stylesheet and
+  // deployed a half-styled site with no error anywhere.
+  it('is not thrown off by apostrophes in JSX text', () => {
+    const code = `export default () => (
+      <div>
+        <p className="text-lg">Founder's Series</p>
+        <div className="mt-8 justify-end">between</div>
+        <p className="py-5">What's Included</p>
+      </div>
+    )`
+    // the raw-JSX trap: everything between the two apostrophes disappears
+    const raw = extractCandidates(code)
+    expect(raw).not.toContain('mt-8')
+    expect(raw).not.toContain('justify-end')
+
+    expect(candidatesFor(code)).toEqual(
+      expect.arrayContaining(['text-lg', 'mt-8', 'justify-end', 'py-5'])
+    )
+  })
+
+  it('still collects conditional and template classes', () => {
+    const code = `export default () => (
+      <div className={ok ? "bg-green-500" : "bg-red-500"}>
+        <p className={\`p-4 \${x} m-2\`}>Don't break</p>
+      </div>
+    )`
+    expect(candidatesFor(code)).toEqual(
+      expect.arrayContaining(['bg-green-500', 'bg-red-500', 'p-4', 'm-2'])
+    )
   })
 })
 

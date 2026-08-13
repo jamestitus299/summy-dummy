@@ -17,8 +17,8 @@ Before evaluating your code, the canvas scans the **entire source string** with 
 identifier regex and loads what it finds:
 
 - a lucide icon name → one dynamic import, ~0.8 KB gz for that icon's file
-- any recharts name → the whole recharts library (~145 KB gz) in one import
-- any motion name → the whole motion library (~61 KB gz) in one import
+- any recharts name → the whole recharts library (~158 KB gz) in one import
+- any motion name → the whole motion library (~64 KB gz) in one import
 - any `Fa*` (Font Awesome) name → the whole `react-icons/fa` pack (~420 KB gz,
   1.3 MB raw) in one import — there are no per-icon files to split
 
@@ -54,7 +54,7 @@ pack is a single fetch. Mixing sets on one page pays both loaders; pick one.
 ## Rule 2 — library names in comments and strings still cost
 
 ```jsx
-// ❌ this comment costs ~145 KB gz — "LineChart" matches the recharts name list
+// ❌ this comment costs ~158 KB gz — "LineChart" matches the recharts name list
 // TODO: maybe swap this table for a LineChart later
 export default function StatsTable() { ... }
 

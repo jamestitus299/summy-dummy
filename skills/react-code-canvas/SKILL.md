@@ -1,7 +1,7 @@
 ---
 name: react-code-canvas
 metadata:
-  version: 0.0.4
+  version: 0.0.5
   library-version: "^5.0.0"
 description: "Constraints for authoring React component code that will be rendered by react-code-canvas (ReactCanvas / EditTextReactCanvas) or built into a static site with buildStandaloneSite. Use whenever generating, editing, reviewing, or validating a code string that gets passed to the canvas as its `code` prop or to the site builder — including LLM prompt construction in the host app. Covers the injected scope, forbidden patterns, entry shape, name collisions, React DOM property casing, standalone-build rules (Tailwind, prerender safety), performance, and programmatic validation."
 ---
@@ -61,8 +61,8 @@ export default function Page() {
 | React | `React`, `useState`, `useEffect`, `useContext`, `useReducer`, `useRef`, `useMemo`, `useCallback` | free (base) |
 | Icons (preferred) | all **5841** `lucide-react` exports, e.g. `<Activity/>`, `<User/>`, `<ChevronRight/>` | ~0.8 KB gz per icon |
 | Icons (legacy) | all **1611** `react-icons/fa` exports, e.g. `<FaUser/>`, `<FaHome/>` | **whole pack, ~420 KB gz** — one `Fa*` name fetches all of it |
-| Charts | all **101** `recharts` exports, e.g. `ResponsiveContainer`, `LineChart`, `XAxis`, `CartesianGrid` | whole library, ~145 KB gz |
-| Animation | `motion` (as `<motion.div>`) plus motion's **383** hooks/components | whole library, ~61 KB gz |
+| Charts | all **101** `recharts` exports, e.g. `ResponsiveContainer`, `LineChart`, `XAxis`, `CartesianGrid` | whole library, ~158 KB gz |
+| Animation | `motion` (as `<motion.div>`) plus motion's **383** hooks/components | whole library, ~64 KB gz |
 | Head | `Helmet`, `HelmetProvider` | free (base) |
 | Entry | `render`, `exports`, `require` | free (base) |
 
@@ -99,7 +99,7 @@ table above.
 
 ## 4. Name collisions — the sharpest edge
 
-The scope draws on ~7850 flat global names. Declaring a component or variable with a
+The scope draws on ~7950 flat global names. Declaring a component or variable with a
 name that already exists silently shadows it, or worse, your JSX resolves to a chart
 primitive.
 
@@ -116,12 +116,19 @@ So `<Text>hello</Text>` is a *chart* component, not a text element. Use them onl
 inside a chart tree. For generic UI use plain tags (`<span>`, `<p>`) or a distinctly
 named component.
 
-**Lucide owns most common UI nouns.** Of 70 everyday component names checked
-(`Navigation`, `Menu`, `Image`, `Link`, `Table`, `Search`, `Layout`, `Grid`, `Map`,
-`Card`-adjacent words, …), **68 collide** with a lucide icon.
+**Lucide owns most common UI nouns.** Measured against `isIconName`, **54 of 70**
+everyday component names collide — `Navigation`, `Menu`, `Image`, `Link`, `Table`,
+`Search`, `Layout`, `Grid`, `Map`, `User`, `File`, `Folder`, `Calendar`, `Settings`
+and so on.
 
-Therefore: **prefix your own components.** `SiteNavigation`, not `Navigation`.
-`ProductCard`, not `Card`. `PageHeader`, not `Header`.
+A useful few do *not*, and are safe to use unprefixed: `Card`, `Header`, `Footer`,
+`Button`, `Input`, `Modal`, `Panel`, `Alert`, `Tabs`, `Dialog`, `Chart`. That list is
+only as stable as the lucide version, though — a future release adding a `Card` icon
+turns a working page into a duplicate declaration.
+
+Therefore: **prefix your own components anyway.** `SiteNavigation`, not `Navigation`.
+`DataTable`, not `Table`. `AppSearch`, not `Search`. Prefixing costs nothing and does
+not depend on which names lucide happens to ship today.
 
 Never declare a module-scope name matching an injected global — including React hooks,
 lucide icons, recharts components, motion exports, or the editing helpers
@@ -282,16 +289,45 @@ stylesheet, so the warning in §5 does not apply to a page you know is being bui
 `className="flex gap-4 p-8"` freely. It still will not work in a bare canvas, so if the
 same code must do both, stay with inline `style`.
 
+**Core Tailwind only — no plugins, no custom theme.** The builder compiles
+`@import "tailwindcss"` with stock defaults. There is no config file, so anything that
+would come from a plugin or a `theme.extend` block produces no CSS and the element
+renders unstyled. The classes that bite most often:
+
+| Class | From | Instead |
+| --- | --- | --- |
+| `animate-in`, `slide-in-from-top-2`, `fade-in` | `tailwindcss-animate` plugin | a `<style>` block with `@keyframes` |
+| `prose`, `prose-lg` | `@tailwindcss/typography` | style the elements directly |
+| `bg-brand-500`, `text-primary` | a custom `theme.extend` palette | the arbitrary value: `bg-[#0071E3]` |
+
+**Arbitrary values are core and do work** — verified compiling: `text-[#1D1D1F]`,
+`w-[80vw]`, `bg-white/10`, `hover:bg-black/[0.02]`, `focus:border-[#0071E3]`,
+`lg:col-span-5`. So any brand colour or one-off size is available without a config;
+write it inline rather than inventing a theme name.
+
 **Class names must appear literally.** Same rule as scope names: the compiler collects
-candidates from the source text, so a computed class is invisible and its CSS is never
+candidates from the source, so a fully computed class is invisible and its CSS is never
 emitted.
 
 ```jsx
 // ✅ both branches are in the source
 <div className={active ? "bg-green-500" : "bg-red-500"}>
+// ✅ static chunks of a template are collected
+<div className={`p-4 ${extra}`}>
 // ❌ nothing to collect -- renders unstyled
 <div className={`bg-${color}-500`}>
 ```
+
+**Your own class names need a `<style>` block.** A class Tailwind does not recognise is
+simply dropped, so `className="apple-card"` styles nothing unless the component also
+defines it:
+
+```jsx
+<style>{`.apple-card { border-radius: 18px; backdrop-filter: blur(20px); }`}</style>
+<div className="apple-card p-8">…</div>
+```
+
+That CSS ships inside the JS bundle and works — it is not Tailwind's to compile.
 
 **Guard DOM access during render, or lose the prerender.** The builder renders the first
 frame in Node, where there is no DOM. Touching `document` or `window` *while rendering*
@@ -317,19 +353,112 @@ One thing that does not prerender at all: **recharts**. Charts render nothing se
 and appear on hydration. Everything around them still prerenders, so this only matters if
 a chart is your above-the-fold content.
 
-## 9. Performance
+## 9. Performance — standalone builds
 
-Every name in the source decides what gets downloaded, and the whole string is
-re-evaluated on every change — so authoring choices are directly load-time and
-main-thread choices. The rules that matter, in order of cost:
+**Load time of the built site.** For canvas-only code, skip to §9b.
+
+The builder already does the page-level work for you, so do not hand-write it: the
+CSS is inlined when small (no render-blocking request), the script is `defer`red in
+`<head>` (discovered immediately, never blocks the parse), asset names are
+content-hashed (safe to cache immutably), and the markup is prerendered. A built page
+is **two requests**: the HTML and the JS.
+
+What is left is entirely decided by what you write.
+
+### The payload
+
+Measured, brotli, over the wire:
+
+| Page contains | JS | Δ |
+| --- | --- | --- |
+| nothing but React | **51 KB** | the floor — unavoidable |
+| + 8 lucide icons | 52 KB | ~1 KB total |
+| + one `Fa*` icon | 52 KB | ~1 KB — esbuild tree-shakes the other 1610 |
+| + `motion` | 86 KB | **+35 KB** |
+| + `recharts` | 123 KB | **+72 KB** |
+
+**`motion` and `recharts` are the only levers.** Together they roughly quadruple the
+payload. Everything else is noise: icons are ~free, and Tailwind output measured 1.2 KB
+brotli for a small page, 2.2 KB at ~30 utilities, inlined either way.
+
+So: do not import a charting library to draw one sparkline, and do not pull in `motion`
+for an effect a CSS transition does. A `<style>` block with `transition` or
+`@keyframes` costs bytes already in the HTML; `motion` costs 35 KB.
+
+The canvas rules about names in comments do **not** apply here — imports come from an
+AST, so `// like a LineChart` costs nothing.
+
+### First contentful paint
+
+The prerendered HTML paints before any of that 51 KB parses, so FCP is almost entirely
+about not throwing that away:
+
+1. **Never touch `document`/`window` during render.** One unguarded access drops the
+   *whole page* to an empty shell (§8) and FCP becomes "after React boots". This is the
+   most expensive mistake available and the easiest to make.
+2. **Keep charts below the fold.** recharts renders nothing server-side, so a chart at
+   the top means an empty first paint no matter what else you do. Lead with text.
+3. **Render the shell, not `null`.** Returning `null` until a `fetch` resolves throws
+   away the prerendered HTML you already paid for. Prerender a skeleton; fill it in on
+   the client.
+4. **Nothing above the fold starts invisible.** An element animating in from
+   `opacity: 0` is blank to a crawler and to a slow connection. Animate below the fold,
+   or start visible.
+
+### Images and assets
+
+**The builder bundles code, not files.** Nothing on disk is copied — `<img
+src="./photo.png" />` emits markup and no file, so the built site 404s.
+
+```jsx
+// ✅ absolute URL to something you already host
+<img src="https://cdn.example.com/photo.avif" alt="" width={800} height={450} />
+// ✅ data URI for small assets -- no extra request
+<img src="data:image/svg+xml;base64,PHN2Zy…" alt="" />
+```
+
+Data URIs only for genuinely small assets: base64 adds ~33 %, cannot be cached
+separately, and is markup the prerender has to carry.
+
+- **Always set `width` and `height`.** Prerendered HTML means the image box exists
+  before the image does; without dimensions every image is a layout shift.
+- **`loading="lazy"` and `decoding="async"`** below the fold — plain lowercase
+  attributes, no React casing needed.
+- **Never lazy-load the hero.** It delays the LCP element by a round trip.
+- **Prefer lucide icons over image files** — they are inline SVG in the bundle, so they
+  cost no request and cannot shift layout.
+- **Fonts: preconnect, and mind the casing.** `crossOrigin` — the HTML spelling is
+  silently dropped (§7) and the preconnect then does nothing.
+- **Set `font-display`.** The default blocks text for up to 3 s, and invisible text is
+  not a contentful paint, so FCP waits on the font. `swap` paints immediately in a
+  fallback but reflows when the real font lands; `optional` gets the fast paint with no
+  shift, at the cost of some first visits using the fallback. Prefer `optional` unless
+  the brand font is non-negotiable.
+
+```jsx
+<Helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+</Helmet>
+<style>{`@font-face { font-family: 'X'; src: url(…); font-display: optional; }`}</style>
+```
+
+A system font stack avoids all of it — no request, no invisible text, no shift — and is
+the fastest option whenever the design allows. Tailwind's default `font-sans` already is
+one.
+
+## 9b. Performance — canvas rendering
+
+Different machine, different rules. The canvas has no bundler: it scans the source with
+a **regex** and fetches whole packages at runtime, and re-evaluates the entire string on
+every change. So authoring choices are directly load-time and main-thread choices:
 
 1. **Never emit an `Fa*` name unless the page already uses Font Awesome.** One
    `Fa*` reference fetches the whole ~420 KB gz pack; the lucide equivalent is
    one ~0.8 KB file. `FaUser` → `User`, `FaHome` → `House`.
 2. **Do not mention chart/animation names you don't render.** The scanner is a
-   regex over the whole source — `recharts` (~145 KB gz) and `motion` (~61 KB gz)
+   regex over the whole source — `recharts` (~158 KB gz) and `motion` (~64 KB gz)
    load even when the name only appears in a **comment or string literal**.
-   `// like a LineChart` costs 145 KB.
+   `// like a LineChart` costs 158 KB.
 3. **Keep module level empty.** Top-level statements re-run on every evaluation,
    including the re-execution after a failed edit. Constants are fine; work is not.
 4. **Render the shell before the data.** The canvas paints as soon as evaluation
@@ -339,103 +468,10 @@ main-thread choices. The rules that matter, in order of cost:
    ships a ~124 KB browser JIT on every visit; inline `style` (plus a `<style>`
    tag for hover/media/keyframes) costs nothing and works everywhere. See .5.
 
-### Standalone builds: different economics
-
-The rules above describe the *canvas*, which has no bundler and fetches whole
-packages at runtime. A standalone build bundles and tree-shakes, so the costs
-change — measured, brotli, what actually goes over the wire:
-
-| Page contains | JS (brotli) | Δ over baseline |
-| --- | --- | --- |
-| nothing but React | **51 KB** | — the floor, unavoidable |
-| + 1 lucide icon | 51 KB | ~0 |
-| + 8 lucide icons | 52 KB | **~1 KB total** |
-| + one `Fa*` icon | 52 KB | **~1 KB** (not 420 KB) |
-| + `motion` | 86 KB | **+35 KB** |
-| + `recharts` | 123 KB | **+72 KB** |
-
-Two of the canvas rules invert here:
-
-- **Rule 1 does not apply.** esbuild drops the 1610 Font Awesome icons you did not
-  reference, so one `Fa*` name costs ~1 KB rather than the whole pack. Still prefer
-  lucide for consistency, but it is no longer a performance emergency.
-- **Rule 2 does not apply.** Imports are derived from an AST, not a regex, so
-  `// like a LineChart` in a comment or string pulls in nothing.
-
-What still costs: **`motion` and `recharts` are the only real levers.** Together they
-roughly quadruple the payload. CSS is not a lever — Tailwind output measured 1.2 KB
-brotli for a small page and 2.2 KB for one using ~30 utilities, most of it preflight.
-
-### First contentful paint
-
-**Prerendering is the whole ballgame.** With it, the text is in the HTML and paints
-before any JS parses; without it the browser has 51 KB+ of React to fetch, parse and
-execute before anything appears.
-
-```
-prerender: true   ->  <div id="root"><main><h1>Title</h1><p>Some body copy…
-prerender: false  ->  <div id="root"></div>
-```
-
-So the FCP rules are mostly "do not lose the prerender":
-
-1. **Never touch `document`/`window` during render.** One unguarded access drops the
-   *entire page* to a client-only shell — see §8. This is the single most expensive
-   mistake available.
-2. **Keep charts below the fold.** recharts renders nothing server-side, so a chart
-   at the top of the page means an empty first paint no matter what else you do.
-   Lead with text or a static hero.
-3. **Render the shell before the data.** Same as canvas rule 4, and it matters more
-   here: returning `null` until a `fetch` resolves throws away the prerendered HTML
-   you already paid for. Prerender the skeleton, fill it in on the client.
-4. **Do not animate the first paint.** An element that starts at `opacity: 0` and
-   animates in is, to a crawler and to a user on a slow connection, blank. Animate
-   things below the fold, or start from a visible state.
-
-### Images and assets
-
-**The builder bundles code, not files.** Nothing on disk is copied into the output —
-`<img src="./photo.png" />` emits the markup and no file, so the built site 404s.
-Two options that work:
-
-```jsx
-// ✅ absolute URL to something you already host
-<img src="https://cdn.example.com/photo.avif" alt="" />
-// ✅ data URI, for small assets -- inlined into the HTML, no extra request
-<img src="data:image/svg+xml;base64,PHN2Zy…" alt="" />
-```
-
-Keep data URIs to genuinely small assets: base64 adds ~33 %, it cannot be cached
-separately, and it is markup the prerender has to carry.
-
-Then the ordinary rules, which the builder does nothing to enforce:
-
-- **Always set `width` and `height`.** Prerendered HTML means the image box exists
-  before the image does; without dimensions every image is a layout shift.
-- **`loading="lazy"` and `decoding="async"`** on anything below the fold. Both are
-  plain lowercase DOM attributes and need no React casing.
-- **Never lazy-load the hero.** `loading="lazy"` above the fold delays the LCP
-  element by a round trip.
-- **Prefer SVG for icons you already have** — lucide icons are inline SVG in the
-  bundle, so they cost no request at all and cannot shift layout.
-- **Fonts: preconnect, and mind the casing.** `crossOrigin` — the HTML spelling is
-  silently dropped (§7) and the preconnect then does nothing useful. Pair with
-  `font-display: swap` so text paints in a fallback rather than waiting.
-
-```jsx
-<Helmet>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-</Helmet>
-<style>{`@font-face { font-family: 'X'; src: url(…); font-display: swap; }`}</style>
-```
-
-A self-hosted or system font stack avoids the round trip entirely and is the fastest
-option if the design allows it.
-
 Full guidance with copy-paste patterns:
 
-- [references/performance.md](references/performance.md) — the rules above in
-  depth, with the internals that explain them
+- [references/performance.md](references/performance.md) — the canvas rules above
+  in depth, with the internals that explain them
 - [references/patterns.md](references/patterns.md) — known-good page skeletons
   (static page, chart page, animated page, data-driven page)
 
@@ -494,7 +530,7 @@ watch its `onError` callback.
 
 - [ ] default export (or `render()` call) present
 - [ ] zero `import` statements
-- [ ] own components prefixed so they cannot shadow the ~7850 injected globals
+- [ ] own components prefixed so they cannot shadow the ~7950 injected globals
 - [ ] every scope name spelled out literally, never built from strings
 - [ ] `Text`/`Label`/`Tooltip`/`Line`/`Bar`/etc. used only inside chart trees
 - [ ] top-level side effects guarded against re-execution
@@ -505,6 +541,8 @@ watch its `onError` callback.
 - [ ] DOM props in React casing — `className`, `htmlFor`, `crossOrigin`, `autoFocus`, `readOnly` — never the HTML spelling
 - [ ] `style` is an object with camelCase keys, never a string
 - [ ] if building to a standalone site: class names written literally, DOM access during render guarded with `typeof window !== 'undefined'`
+- [ ] no plugin classes (`animate-in`, `slide-in-from-*`, `prose`) and no custom theme names (`bg-brand-500`) — core Tailwind and arbitrary values only
+- [ ] every non-Tailwind class used is defined in a `<style>` block in the component
 - [ ] images use absolute URLs or data URIs — local file paths are not copied into the build
 - [ ] every `<img>` has `width`/`height`; below-the-fold ones have `loading="lazy"`, the hero does not
 - [ ] nothing above the fold starts invisible (`opacity: 0`) or depends on a chart

@@ -23,9 +23,9 @@ import {
 } from "../coreComponents/core/custom-transformer";
 import { generateElement } from "../coreComponents/core/utils";
 import { resolveScope } from "../scopes/lazyScope";
-import { entryFor, escapeHtml, extractCandidates, splitHoisted } from "./entry";
+import { candidatesFor, entryFor, escapeHtml, splitHoisted } from "./entry";
 
-export { entryFor, extractCandidates, importLines } from "./entry";
+export { candidatesFor, entryFor, extractCandidates, importLines } from "./entry";
 
 /** Where esbuild and require.resolve look for bare specifiers. See bundleEntry. */
 const BUILDER_DIR = fileURLToPath(new URL(".", import.meta.url));
@@ -174,7 +174,7 @@ async function compileCss(
   if (tailwind && code.includes("className")) {
     const { compile } = await loadTailwind();
     const compiler = await compile('@import "tailwindcss";', { loadStylesheet });
-    out = compiler.build(extractCandidates(code));
+    out = compiler.build(candidatesFor(code));
   }
 
   out += css;
@@ -213,6 +213,9 @@ async function prerenderMarkup(code: string): Promise<string> {
   }
 }
 
+/** Below this, CSS is inlined into the HTML instead of fetched. See buildStandaloneSite. */
+const INLINE_CSS_LIMIT = 14 * 1024;
+
 const hash = (content: string): string =>
   createHash("sha256").update(content).digest("hex").slice(0, 8);
 
@@ -248,11 +251,21 @@ export async function buildStandaloneSite(
   const jsPath = `assets/app-${hash(js)}.js`;
   files[jsPath] = js;
 
-  let cssLink = "";
+  // CSS is render-blocking: the browser will not paint until it has it. An
+  // external file therefore costs a whole round trip before first paint, which
+  // for a page this size is the single largest slice of FCP. Under ~14 KB it
+  // goes inline instead and arrives in the same response as the HTML -- 14 KB
+  // being roughly the first TCP congestion window, so it is free in practice.
+  // Larger than that, a separate cacheable file is the better trade.
+  let cssTag = "";
   if (css) {
-    const cssPath = `assets/style-${hash(css)}.css`;
-    files[cssPath] = css;
-    cssLink = `<link rel="stylesheet" href="${cssPath}">`;
+    if (Buffer.byteLength(css) <= INLINE_CSS_LIMIT) {
+      cssTag = `<style>${css}</style>`;
+    } else {
+      const cssPath = `assets/style-${hash(css)}.css`;
+      files[cssPath] = css;
+      cssTag = `<link rel="stylesheet" href="${cssPath}">`;
+    }
   }
 
   // The code's own <title> wins; `title` is the fallback for code that emits none.
@@ -268,11 +281,11 @@ export async function buildStandaloneSite(
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-${titleTag}${hoisted}${cssLink}${head}
+${titleTag}${hoisted}${cssTag}${head}
+<script defer src="${jsPath}"></script>
 </head>
 <body>
 <div id="root">${body}</div>
-<script src="${jsPath}"></script>
 </body>
 </html>
 `;

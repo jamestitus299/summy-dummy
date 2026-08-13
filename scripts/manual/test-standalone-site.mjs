@@ -113,16 +113,24 @@ const files = await buildStandaloneSite(page, { title: "Fallback" });
 const ms = Date.now() - t0;
 const html = files["index.html"];
 const js = files[Object.keys(files).find((k) => k.includes("app-"))];
-const css = files[Object.keys(files).find((k) => k.includes("style-"))];
+// Small CSS is inlined into the HTML rather than emitted as a file, so read it
+// from whichever place it landed.
+const css = files[Object.keys(files).find((k) => k.includes("style-"))]
+  ?? html.match(/<style>([\s\S]*?)<\/style>/)?.[1]
+  ?? "";
 
 check("built in under 2s", ms < 2000, `${ms}ms`);
-check("emits index.html + hashed js + hashed css", Object.keys(files).length === 3, Object.keys(files).join(", "));
+check("emits index.html + hashed js, with small css inlined", Object.keys(files).length === 2, Object.keys(files).join(", "));
 check("prerendered the markup", html.includes("Count: "));
 check("prerendered the lucide icon as real svg", html.includes("<svg"));
 check("hoisted the code's own <title> into <head>", /<head>[\s\S]*<title>Counter<\/title>/.test(html));
 check("the code's title beat the title option", !html.includes("Fallback"));
 check("hoisted <meta name=\"description\"> into <head>", /<head>[\s\S]*<meta name="description"/.test(html));
-check("linked the stylesheet", /<link rel="stylesheet" href="assets\/style-/.test(html));
+// Render-blocking CSS in a separate file costs a round trip before first paint.
+check("inlined the stylesheet, no extra request", /<style>/.test(html) && !/<link rel="stylesheet"/.test(html));
+// Deferred and in <head>: discovered by the preload scanner immediately, executed
+// after the document parses, so it never blocks the prerendered markup painting.
+check("script is deferred and in <head>", /<head>[\s\S]*<script defer src="assets\/app-[^"]+\.js"><\/script>[\s\S]*<\/head>/.test(html));
 check("compiled every Tailwind utility used",
   ["flex", "flex-col", "gap-4", "p-8", "bg-slate-900", "text-white", "text-3xl", "font-bold", "rounded", "bg-blue-600", "px-4", "py-2"]
     .every((c) => css.includes(`.${c}`)));
@@ -174,7 +182,7 @@ const edited = await buildStandaloneSite(
   'export default () => <EditableText elementType="p" tailwindStyles="text-lg" textContent="Hello" nodeId="n1"/>'
 );
 check("reversed EditableText to a plain tag", /<p[^>]*>Hello<\/p>/.test(edited["index.html"]), rootOf(edited["index.html"]));
-check("compiled the class it carried", Object.keys(edited).some((k) => k.endsWith(".css")));
+check("compiled the class it carried", /<style>[\s\S]*\.text-lg/.test(edited["index.html"]));
 
 // --- writeStandaloneSite -----------------------------------------------------
 console.log("\nwriteStandaloneSite");

@@ -15,12 +15,20 @@
  *
  *   bun run test:manual:site ./MyPage.jsx
  *   bun run test:manual:site ./MyPage.jsx ./out
+ *
+ * The output directory is the second positional, or --out=DIR in suite mode
+ * where there is no file to put first:
+ *
+ *   bun run test:manual:site --out=./out
  */
 
 import { readFile, rm } from "node:fs/promises";
 import { buildStandaloneSite, writeStandaloneSite } from "../../dist/builder.mjs";
 
-const OUT = "/tmp/react-code-canvas-site";
+const args = process.argv.slice(2);
+const outFlag = args.find((a) => a.startsWith("--out="))?.slice("--out=".length);
+const [fileArg, outArg] = args.filter((a) => !a.startsWith("-"));
+const OUT = outFlag ?? outArg ?? "/tmp/react-code-canvas-site";
 
 let failures = 0;
 const check = (label, ok, detail = "") => {
@@ -35,11 +43,7 @@ const kb = (s) => `${(Buffer.byteLength(s) / 1024).toFixed(1)} KB`;
 /* file mode                                                                  */
 /* -------------------------------------------------------------------------- */
 
-const [fileArg, outArg] = process.argv.slice(2);
-
 if (fileArg) {
-  const outDir = outArg ?? "out";
-
   let code;
   try {
     code = await readFile(fileArg, "utf8");
@@ -48,7 +52,7 @@ if (fileArg) {
     process.exit(1);
   }
 
-  console.log(`\nbuilding ${fileArg} -> ${outDir}/`);
+  console.log(`\nbuilding ${fileArg} -> ${OUT}/`);
 
   // Imports do resolve here, unlike in the canvas: sucrase rewrites them to
   // `require(...)` and esbuild bundles those calls (verified -- no `require`
@@ -84,11 +88,11 @@ if (fileArg) {
   console.log(`  stylesheet    ${css ? "yes, Tailwind compiled" : "none -- no className in the code"}`);
   console.log(`  bundle        ${kb(js)}`);
 
-  await rm(outDir, { recursive: true, force: true });
-  const written = await writeStandaloneSite(code, outDir, {
+  await rm(OUT, { recursive: true, force: true });
+  const written = await writeStandaloneSite(code, OUT, {
     title: fileArg.split("/").pop(),
   });
-  console.log(`\n  wrote ${written.length} files\n\n  npx serve ${outDir}\n`);
+  console.log(`\n  wrote ${written.length} files\n\n  npx serve ${OUT}\n`);
   process.exit(0);
 }
 

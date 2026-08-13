@@ -106,6 +106,55 @@ import { EditTextReactCanvas } from "react-code-canvas";
 
 `EditTextReactCanvas` adds text editing behavior to rendered React code (beta).
 
+### Build a standalone website
+
+Turn a code string into a deployable static site — `index.html` plus hashed `assets/`, with React,
+every library the code references and compiled Tailwind bundled in. No CDN, no network at runtime.
+
+```js
+// Node only. Ships as a separate entry so nothing here reaches your browser bundle.
+import { writeStandaloneSite } from "react-code-canvas/builder";
+
+await writeStandaloneSite(CODE, "./out");
+// -> out/index.html, out/assets/app-<hash>.js, out/assets/style-<hash>.css
+```
+
+Then deploy `out/` anywhere that serves files. Use `buildStandaloneSite` instead to get a
+`path -> contents` map and handle delivery yourself.
+
+Requires the optional peers it actually uses: `npm i -D esbuild`, plus `tailwindcss` if your code
+uses `className`. Neither is loaded otherwise.
+
+#### Options
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `title` | `string` | `<title>` for code that emits none of its own. A `<Helmet><title>` in the code wins. |
+| `lang` | `string` | `<html lang>`. Default `'en'`. |
+| `tailwind` | `boolean` | Compile Tailwind for the classes found in the code. Default `true`; only runs when the code contains `className`. |
+| `css` | `string` | Extra CSS, appended after the compiled Tailwind. |
+| `head` | `string` | Raw HTML appended to `<head>` — fonts, favicon, OG tags, analytics. |
+| `prerender` | `boolean` | Bake the initial markup into the HTML for SEO, then hydrate. Default `true`. |
+| `minify` | `boolean` | Default `true`. |
+| `target` | `string` | esbuild target. Default `'es2020'`. |
+
+Notes:
+
+- **Styling all works**: inline `style` objects, in-component `<style>` tags, and Tailwind classes
+  are compiled into a real stylesheet. Unlike the canvas, the built site does not need the host to
+  provide Tailwind.
+- **Prerendering is best-effort.** Code that touches `document` or `window` *during render* throws
+  in Node; the build warns and emits a client-only shell instead of failing. Guard with
+  `typeof document !== "undefined"` to keep the prerender. `useEffect` never runs during prerender,
+  so it is always safe.
+- `<Helmet>` finally does something here — React 19 hoists its `<title>`/`<meta>` and the builder
+  lifts them into `<head>`, where crawlers read them.
+- Machine-generated `<EditableText>` tags from an `EditTextReactCanvas` session are reversed back to
+  plain JSX; a deployed page does not keep click-to-edit fields.
+- **recharts charts do not prerender** — measured: they render nothing server-side, fixed size or
+  not, and appear on hydration. The rest of the page still prerenders normally, so only the chart
+  area is blank in the initial HTML.
+
 ## Notes
 
 - Code should export a default component, for example `export default function ComponentName() {}`.

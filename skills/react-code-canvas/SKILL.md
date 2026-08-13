@@ -1,9 +1,9 @@
 ---
 name: react-code-canvas
 metadata:
-  version: 0.0.3
+  version: 0.0.4
   library-version: "^5.0.0"
-description: "Constraints for authoring React component code that will be rendered by react-code-canvas (ReactCanvas / EditTextReactCanvas). Use whenever generating, editing, reviewing, or validating a code string that gets passed to the canvas as its `code` prop — including LLM prompt construction in the host app. Covers the injected scope, forbidden patterns, entry shape, name collisions, performance rules, and programmatic validation."
+description: "Constraints for authoring React component code that will be rendered by react-code-canvas (ReactCanvas / EditTextReactCanvas) or built into a static site with buildStandaloneSite. Use whenever generating, editing, reviewing, or validating a code string that gets passed to the canvas as its `code` prop or to the site builder — including LLM prompt construction in the host app. Covers the injected scope, forbidden patterns, entry shape, name collisions, React DOM property casing, standalone-build rules (Tailwind, prerender safety), performance, and programmatic validation."
 ---
 
 # react-code-canvas — authoring constraints
@@ -143,6 +143,12 @@ inline styles simply don't have.
 Use Tailwind only when the host explicitly guarantees it; never mix — a page
 half-styled by each is the worst of both.
 
+**Exception — code destined for `buildStandaloneSite`.** The site builder compiles Tailwind for real and ships the CSS with
+the output, so there is no host to depend on and no CDN. If you know the code is
+being built into a standalone site rather than rendered in someone's canvas,
+Tailwind is fully available and costs nothing at runtime. The guidance above is
+about the *canvas*, where no such compile step exists.
+
 ```jsx
 // ✅ self-contained, styled on any host
 <div style={{ display: 'flex', gap: 12, padding: '2rem' }}>
@@ -205,7 +211,113 @@ start on the first commit. Nothing to do about this while authoring — it only
 matters if you are writing tests against the canvas, which must await the render
 rather than assert immediately.
 
-## 7. Performance
+## 7. React DOM properties, not HTML attributes
+
+JSX takes React's camelCase property names, not the HTML attribute spellings. Copying
+markup from an HTML snippet or a docs page is the usual way this gets in.
+
+React warns, then does one of two things — and the second is the dangerous one:
+
+```jsx
+// ⚠️ warns, but renders anyway (React passes unknown lowercase attributes through)
+<p class="p-4">          <label for="x">          <input maxlength="10" />
+
+// ❌ warns and is SILENTLY DROPPED from the output
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<input autofocus readonly />
+```
+
+That `crossorigin` case is the one that bites: the `<link>` still renders, so the page
+looks fine, but the preconnect has lost its CORS mode and the font never benefits.
+Same shape for `autofocus` and `readonly` — the element renders, the behaviour is gone.
+
+```jsx
+// ✅
+<p className="p-4">
+<label htmlFor="x">
+<input maxLength={10} autoFocus readOnly />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+```
+
+The ones worth memorising, because they are the ones people paste:
+
+| HTML | JSX |
+| --- | --- |
+| `class` | `className` |
+| `for` | `htmlFor` |
+| `crossorigin` | `crossOrigin` |
+| `charset` | `charSet` |
+| `http-equiv` | `httpEquiv` |
+| `srcset` | `srcSet` |
+| `tabindex` | `tabIndex` |
+| `maxlength` / `minlength` | `maxLength` / `minLength` |
+| `autofocus` / `autocomplete` | `autoFocus` / `autoComplete` |
+| `readonly` / `novalidate` | `readOnly` / `noValidate` |
+| `colspan` / `rowspan` | `colSpan` / `rowSpan` |
+| `referrerpolicy` | `referrerPolicy` |
+| `playsinline` / `autoplay` | `playsInline` / `autoPlay` |
+| `datetime` | `dateTime` |
+| `enctype` | `encType` |
+| `spellcheck` / `contenteditable` | `spellCheck` / `contentEditable` |
+
+`data-*` and `aria-*` keep their dashes and are the only exceptions.
+
+Inline `style` is an object with camelCase keys, never a string — `style="color:red"`
+throws. Unitless numbers become px: `{{ padding: 16 }}` is `16px`, `{{ lineHeight: 1.5 }}`
+stays unitless.
+
+```jsx
+<div style={{ backgroundColor: '#111', paddingTop: 16, borderRadius: 8 }}>
+```
+
+## 8. Building to a standalone site
+
+Code that renders in the canvas can also be built into a deployable static site with
+`buildStandaloneSite` (see the `react-code-canvas/builder` entry). The contract is the
+same — default export, no imports, scope-provided dependencies — with four differences
+worth writing for up front.
+
+**Tailwind is available.** The builder compiles the classes your code uses into a real
+stylesheet, so the warning in §5 does not apply to a page you know is being built. Write
+`className="flex gap-4 p-8"` freely. It still will not work in a bare canvas, so if the
+same code must do both, stay with inline `style`.
+
+**Class names must appear literally.** Same rule as scope names: the compiler collects
+candidates from the source text, so a computed class is invisible and its CSS is never
+emitted.
+
+```jsx
+// ✅ both branches are in the source
+<div className={active ? "bg-green-500" : "bg-red-500"}>
+// ❌ nothing to collect -- renders unstyled
+<div className={`bg-${color}-500`}>
+```
+
+**Guard DOM access during render, or lose the prerender.** The builder renders the first
+frame in Node, where there is no DOM. Touching `document` or `window` *while rendering*
+throws; the build warns and falls back to a client-only shell, so the page still works but
+ships empty HTML and loses the SEO the prerender existed for. `useEffect` never runs
+during prerender, so it is always safe.
+
+```jsx
+// ✅ prerenders
+const dark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+// ✅ prerenders -- effects do not run server-side
+useEffect(() => { document.title = 'Ready'; }, []);
+// ❌ throws in Node, drops the whole page to a client-only shell
+const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+```
+
+**`<Helmet>` becomes real.** In the canvas it is a no-op unless the host renders a
+provider; in a built site React 19 hoists its tags and the builder lifts them into
+`<head>`. Use it for `<title>` and `<meta name="description">` — that is what crawlers
+read.
+
+One thing that does not prerender at all: **recharts**. Charts render nothing server-side
+and appear on hydration. Everything around them still prerenders, so this only matters if
+a chart is your above-the-fold content.
+
+## 9. Performance
 
 Every name in the source decides what gets downloaded, and the whole string is
 re-evaluated on every change — so authoring choices are directly load-time and
@@ -227,6 +339,99 @@ main-thread choices. The rules that matter, in order of cost:
    ships a ~124 KB browser JIT on every visit; inline `style` (plus a `<style>`
    tag for hover/media/keyframes) costs nothing and works everywhere. See .5.
 
+### Standalone builds: different economics
+
+The rules above describe the *canvas*, which has no bundler and fetches whole
+packages at runtime. A standalone build bundles and tree-shakes, so the costs
+change — measured, brotli, what actually goes over the wire:
+
+| Page contains | JS (brotli) | Δ over baseline |
+| --- | --- | --- |
+| nothing but React | **51 KB** | — the floor, unavoidable |
+| + 1 lucide icon | 51 KB | ~0 |
+| + 8 lucide icons | 52 KB | **~1 KB total** |
+| + one `Fa*` icon | 52 KB | **~1 KB** (not 420 KB) |
+| + `motion` | 86 KB | **+35 KB** |
+| + `recharts` | 123 KB | **+72 KB** |
+
+Two of the canvas rules invert here:
+
+- **Rule 1 does not apply.** esbuild drops the 1610 Font Awesome icons you did not
+  reference, so one `Fa*` name costs ~1 KB rather than the whole pack. Still prefer
+  lucide for consistency, but it is no longer a performance emergency.
+- **Rule 2 does not apply.** Imports are derived from an AST, not a regex, so
+  `// like a LineChart` in a comment or string pulls in nothing.
+
+What still costs: **`motion` and `recharts` are the only real levers.** Together they
+roughly quadruple the payload. CSS is not a lever — Tailwind output measured 1.2 KB
+brotli for a small page and 2.2 KB for one using ~30 utilities, most of it preflight.
+
+### First contentful paint
+
+**Prerendering is the whole ballgame.** With it, the text is in the HTML and paints
+before any JS parses; without it the browser has 51 KB+ of React to fetch, parse and
+execute before anything appears.
+
+```
+prerender: true   ->  <div id="root"><main><h1>Title</h1><p>Some body copy…
+prerender: false  ->  <div id="root"></div>
+```
+
+So the FCP rules are mostly "do not lose the prerender":
+
+1. **Never touch `document`/`window` during render.** One unguarded access drops the
+   *entire page* to a client-only shell — see §8. This is the single most expensive
+   mistake available.
+2. **Keep charts below the fold.** recharts renders nothing server-side, so a chart
+   at the top of the page means an empty first paint no matter what else you do.
+   Lead with text or a static hero.
+3. **Render the shell before the data.** Same as canvas rule 4, and it matters more
+   here: returning `null` until a `fetch` resolves throws away the prerendered HTML
+   you already paid for. Prerender the skeleton, fill it in on the client.
+4. **Do not animate the first paint.** An element that starts at `opacity: 0` and
+   animates in is, to a crawler and to a user on a slow connection, blank. Animate
+   things below the fold, or start from a visible state.
+
+### Images and assets
+
+**The builder bundles code, not files.** Nothing on disk is copied into the output —
+`<img src="./photo.png" />` emits the markup and no file, so the built site 404s.
+Two options that work:
+
+```jsx
+// ✅ absolute URL to something you already host
+<img src="https://cdn.example.com/photo.avif" alt="" />
+// ✅ data URI, for small assets -- inlined into the HTML, no extra request
+<img src="data:image/svg+xml;base64,PHN2Zy…" alt="" />
+```
+
+Keep data URIs to genuinely small assets: base64 adds ~33 %, it cannot be cached
+separately, and it is markup the prerender has to carry.
+
+Then the ordinary rules, which the builder does nothing to enforce:
+
+- **Always set `width` and `height`.** Prerendered HTML means the image box exists
+  before the image does; without dimensions every image is a layout shift.
+- **`loading="lazy"` and `decoding="async"`** on anything below the fold. Both are
+  plain lowercase DOM attributes and need no React casing.
+- **Never lazy-load the hero.** `loading="lazy"` above the fold delays the LCP
+  element by a round trip.
+- **Prefer SVG for icons you already have** — lucide icons are inline SVG in the
+  bundle, so they cost no request at all and cannot shift layout.
+- **Fonts: preconnect, and mind the casing.** `crossOrigin` — the HTML spelling is
+  silently dropped (§7) and the preconnect then does nothing useful. Pair with
+  `font-display: swap` so text paints in a fallback rather than waiting.
+
+```jsx
+<Helmet>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+</Helmet>
+<style>{`@font-face { font-family: 'X'; src: url(…); font-display: swap; }`}</style>
+```
+
+A self-hosted or system font stack avoids the round trip entirely and is the fastest
+option if the design allows it.
+
 Full guidance with copy-paste patterns:
 
 - [references/performance.md](references/performance.md) — the rules above in
@@ -234,14 +439,14 @@ Full guidance with copy-paste patterns:
 - [references/patterns.md](references/patterns.md) — known-good page skeletons
   (static page, chart page, animated page, data-driven page)
 
-## 8. Security
+## 10. Security
 
 Code is evaluated in the **host page's own context** — same origin, full access to
 `document`, `window`, cookies, `localStorage`, and authenticated `fetch`. There is no
 iframe sandbox. Never pass untrusted or unreviewed code to the canvas without adding
 isolation appropriate to your application.
 
-## 9. Validate programmatically
+## 11. Validate programmatically
 
 Do not rely on review alone. The library ships a static analyzer that runs in Node —
 no DOM, no React render — suitable for CI, batch audits, and migrations:
@@ -296,5 +501,11 @@ watch its `onError` callback.
 - [ ] lucide icons, not `Fa*`, unless the page already pays for Font Awesome
 - [ ] no recharts/motion names in comments or strings unless the page charts/animates
 - [ ] static shell renders before any data fetch resolves
-- [ ] styled with inline `style` / in-code `<style>`, not Tailwind (unless the host guarantees it)
+- [ ] styled with inline `style` / in-code `<style>`, not Tailwind (unless the host guarantees it, or it is being built to a standalone site)
+- [ ] DOM props in React casing — `className`, `htmlFor`, `crossOrigin`, `autoFocus`, `readOnly` — never the HTML spelling
+- [ ] `style` is an object with camelCase keys, never a string
+- [ ] if building to a standalone site: class names written literally, DOM access during render guarded with `typeof window !== 'undefined'`
+- [ ] images use absolute URLs or data URIs — local file paths are not copied into the build
+- [ ] every `<img>` has `width`/`height`; below-the-fold ones have `loading="lazy"`, the hero does not
+- [ ] nothing above the fold starts invisible (`opacity: 0`) or depends on a chart
 - [ ] `analyzeReactCode()` returns `valid: true`

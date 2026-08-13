@@ -33,6 +33,26 @@ describe('collectIdentifiers', () => {
   })
 })
 
+describe('resolveScope name collisions', () => {
+  // Eleven names exist in both lucide and recharts. The winner used to be
+  // whichever dynamic import resolved last, so a warm recharts cache let the
+  // icon overwrite it and <LineChart> rendered a 24x24 icon instead of a chart.
+  it.each([
+    'AreaChart', 'BarChart', 'Brush', 'Cross', 'Dot',
+    'Funnel', 'LineChart', 'PieChart', 'Radar', 'ScatterChart', 'Text',
+  ])('gives recharts %s, not the lucide icon of the same name', async (name) => {
+    const recharts = await import('recharts')
+    const scope = await resolveScope(`export default () => <${name}/>`)
+    expect(scope[name]).toBe(recharts[name])
+  })
+
+  it('still resolves a non-colliding icon from lucide', async () => {
+    const scope = await resolveScope('export default () => <Camera/>')
+    const camera = await import('lucide-react/dist/esm/icons/camera.js')
+    expect(scope.Camera).toBe(camera.default)
+  })
+})
+
 describe('iconLoaderFor', () => {
   it('resolves a plain icon name', () => {
     expect(iconLoaderFor('ChevronRight')).toBeInstanceOf(Function)

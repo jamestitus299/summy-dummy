@@ -4,6 +4,13 @@ How the canvas loads things, and what that means for the code you write. Each ru
 names the internal mechanism so the reasoning survives library upgrades — if the
 mechanism changes, the rule may too.
 
+> **Scope: the canvas, which has no bundler.** If the code is being built into a
+> static site with `buildStandaloneSite`, rules 1 and 2 do not apply — esbuild
+> tree-shakes, so one `Fa*` icon costs ~1 KB instead of the whole pack, and a
+> library name in a comment costs nothing because imports come from an AST rather
+> than a regex. See "Standalone builds: different economics" in SKILL.md for the
+> measured figures and the first-contentful-paint rules that replace these.
+
 ## How loading works (the 30-second model)
 
 Before evaluating your code, the canvas scans the **entire source string** with an

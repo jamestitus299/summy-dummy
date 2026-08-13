@@ -22,6 +22,24 @@ The package entry is `src/index.ts`. It exports two components, their prop types
 
 Prop types `ReactCanvasProps` and `EditReactCanvasProps` are exported alongside, plus the analyzer's `AnalysisResult`, `AnalyzeOptions`, `CodeIssue` and `IssueType`.
 
+### Second entry: `react-code-canvas/builder` (Node only)
+
+| Export | Source | Purpose |
+| --- | --- | --- |
+| `buildStandaloneSite` | `src/builder/standalone.ts` | Build a code string into a deployable static site; returns a `path -> contents` map. |
+| `writeStandaloneSite` | `src/builder/standalone.ts` | The same, written to a directory. |
+
+Emits `index.html` plus hashed `assets/`, with React, every referenced library and
+compiled Tailwind bundled in — no network at runtime. **Never import this from `src/index.ts`**: it
+pulls in `esbuild`, `node:*` and `react-dom/server`, none of which may reach a consumer's browser
+bundle. `esbuild` and `tailwindcss` are *optional* peer dependencies, loaded via dynamic import at
+point of use.
+
+The pure string half lives in `src/builder/entry.ts`, separate only because `standalone.ts` uses
+`import.meta.url` (for esbuild's `resolveDir`), which is a syntax error under jest's CJS runtime —
+so anything a test imports has to live outside it. Jest covers `entry.ts`; the end-to-end build runs
+via `bun run test:manual:site` against `dist/builder.mjs`.
+
 **Contract for consumer-supplied `code`:** must `export default` a component (or call `render(...)`), must **not** contain `import` statements — dependencies are injected through the `scope` prop instead.
 
 **Code persistence:** `ReactCanvas` and `EditTextReactCanvas` accept `persistKey?: string` (saves/restores code in `localStorage`) and `onCodeChange?: (code: string) => void` (notifies on change so the host can persist however it likes). For `EditTextReactCanvas` these operate on the **final saved JSX**, not the intermediate EditableText form. Shared, SSR-safe storage helpers live in `src/coreComponents/core/storage.ts`.
@@ -37,7 +55,7 @@ Top-level layout (build artifacts and `node_modules` omitted):
 ├── doc_site/             # Docusaurus documentation site (own package + bun.lock)
 ├── scripts/
 │   ├── generate-scope-maps.mjs  # emits src/scopes/generated/ from node_modules
-│   └── manual/           # manual, run-by-hand scripts (e.g. transformer walkthrough)
+│   └── manual/           # manual, run-by-hand scripts (transformer, analyzer, site builder)
 ├── skills/               # react-code-canvas agent skill, shipped in the package
 ├── public/               # static assets (e.g. rrc.png used by the README)
 ├── storybook-static/     # built static Storybook  (gitignored)
@@ -84,7 +102,10 @@ Bun is the package manager; the committed lockfile is `bun.lock` (never commit `
 ```bash
 bun install --frozen-lockfile
 bun run test            # jest
-bun run build           # rollup -c  -> dist/
+bun run build           # rollup -c  -> dist/  (browser entry + dist/builder.mjs)
+bun run test:manual:site # end-to-end site build; needs `bun run build` first
+bun run test:manual:site ./Page.jsx [outDir]   # build one canvas-format file instead
+bun run demo:site        # the same, on scripts/manual/fixtures/demo-page.jsx
 bun run dev             # storybook dev on :6006
 bun run build-storybook # static Storybook -> storybook-static/
 bun run size            # size-limit check

@@ -185,10 +185,24 @@ export async function resolveScope(
     );
   }
 
+  // The namespaces are captured here and merged after the await, NOT written
+  // straight into `scope` from their .then. Eleven names exist in both lucide
+  // and recharts (AreaChart BarChart Brush Cross Dot Funnel LineChart PieChart
+  // Radar ScatterChart Text), and writing from inside the callbacks made the
+  // winner whichever import happened to resolve last: on a cold cache the ~0.7KB
+  // icon file beat recharts and recharts won, but once recharts was warm it
+  // resolved first and the icon overwrote it -- so <LineChart> silently rendered
+  // a 24x24 icon instead of a chart. Merging in a fixed order after the await
+  // makes the precedence the documented one: icons first, charts/motion over
+  // them, matching SKILL.md's "recharts owns Text/Label/Legend/Tooltip".
+  let rechartsMod: Record<string, unknown> | undefined;
+  let motionMod: Record<string, unknown> | undefined;
+  let faMod: Record<string, unknown> | undefined;
+
   if (needsRecharts) {
     pending.push(
       import("recharts").then((mod) => {
-        assignNamespace(scope, mod);
+        rechartsMod = mod as Record<string, unknown>;
       }),
     );
   }
@@ -197,7 +211,7 @@ export async function resolveScope(
     pending.push(
       // `motion` has to keep its name -- <motion.div> resolves against it.
       import("motion/react").then((mod) => {
-        assignNamespace(scope, mod);
+        motionMod = mod as Record<string, unknown>;
       }),
     );
   }
@@ -210,13 +224,18 @@ export async function resolveScope(
     // modules from the pack ourselves, or move the code to lucide equivalents.
     pending.push(
       import("react-icons/fa").then((mod: Record<string, unknown>) => {
-        // Assign only what the code referenced, not all 1611 exports: these
-        // become `new Function` parameters on every evaluation.
-        for (const name of faNames) scope[name] = mod[name];
+        faMod = mod;
       }),
     );
   }
 
   await Promise.all(pending);
+
+  if (rechartsMod) assignNamespace(scope, rechartsMod);
+  if (motionMod) assignNamespace(scope, motionMod);
+  // Assign only what the code referenced, not all 1611 exports: these become
+  // `new Function` parameters on every evaluation.
+  if (faMod) for (const name of faNames) scope[name] = faMod[name];
+
   return { ...scope, ...extra };
 }

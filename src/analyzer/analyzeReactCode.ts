@@ -245,8 +245,18 @@ export async function analyzeReactCode(
       const name = node.name;
       if (!name) return;
 
-      // Lowercase JSX names are intrinsic HTML tags (<div>), not identifiers.
-      if (t.isJSXIdentifier(node) && /^[a-z]/.test(name)) return;
+      // Lowercase JSX names are intrinsic HTML tags (<div>), not identifiers --
+      // except when the name is the object of a member expression. In
+      // `<motion.div>` the `motion` half is a real binding that has to come from
+      // the scope, while the `div` half is still just a property. Skipping both
+      // hid `motion` from referencedGlobals entirely, which the canvas survives
+      // (its regex scanner finds it anyway) but the site builder does not: it
+      // derives the bundle's import statements from this list, so the name went
+      // unimported and the page died with `motion is not defined`.
+      const isMemberObject =
+        t.isJSXMemberExpression(path.parent) && path.parent.object === node;
+      if (t.isJSXIdentifier(node) && /^[a-z]/.test(name) && !isMemberObject)
+        return;
 
       // Locally declared (params, consts, function names, imports) -> fine.
       if (path.scope.hasBinding(name, true)) return;

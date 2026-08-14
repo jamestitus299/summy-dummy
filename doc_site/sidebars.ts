@@ -11,6 +11,7 @@ const sidebars: SidebarsConfig = {
       items: ['react-canvas', 'edit-text-react-canvas'],
     },
     'scope',
+    'standalone-site',
     'security',
     'contributing',
   ],

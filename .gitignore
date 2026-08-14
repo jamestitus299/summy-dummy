@@ -31,3 +31,7 @@ bundle-analysis.html
 
 # Agent
 .claude/
+
+# manual demo output
+/demo-site
+/out

@@ -4,7 +4,7 @@ Agent instructions for working in this repository. Read this before making chang
 
 ## What this project is
 
-**`react-code-canvas`** is a published React/TypeScript **library** (npm package, currently `4.2.0-beta.18`). It provides a browser-based canvas that **renders React components from code strings at runtime** and supports live text editing of the rendered output.
+**`react-code-canvas`** is a published React/TypeScript **library** (npm package, currently `5.0.0`). It provides a browser-based canvas that **renders React components from code strings at runtime** and supports live text editing of the rendered output.
 
 Primary use cases: previewing JSX from strings, exposing a scoped set of components/libraries to evaluated code, and validating generated React code before saving it.
 
@@ -22,6 +22,24 @@ The package entry is `src/index.ts`. It exports two components, their prop types
 
 Prop types `ReactCanvasProps` and `EditReactCanvasProps` are exported alongside, plus the analyzer's `AnalysisResult`, `AnalyzeOptions`, `CodeIssue` and `IssueType`.
 
+### Second entry: `react-code-canvas/builder` (Node only)
+
+| Export | Source | Purpose |
+| --- | --- | --- |
+| `buildStandaloneSite` | `src/builder/standalone.ts` | Build a code string into a deployable static site; returns a `path -> contents` map. |
+| `writeStandaloneSite` | `src/builder/standalone.ts` | The same, written to a directory. |
+
+Emits `index.html` plus hashed `assets/`, with React, every referenced library and
+compiled Tailwind bundled in — no network at runtime. **Never import this from `src/index.ts`**: it
+pulls in `esbuild`, `node:*` and `react-dom/server`, none of which may reach a consumer's browser
+bundle. `esbuild` and `tailwindcss` are *optional* peer dependencies, loaded via dynamic import at
+point of use.
+
+The pure string half lives in `src/builder/entry.ts`, separate only because `standalone.ts` uses
+`import.meta.url` (for esbuild's `resolveDir`), which is a syntax error under jest's CJS runtime —
+so anything a test imports has to live outside it. Jest covers `entry.ts`; the end-to-end build runs
+via `bun run test:manual:site` against `dist/builder.mjs`.
+
 **Contract for consumer-supplied `code`:** must `export default` a component (or call `render(...)`), must **not** contain `import` statements — dependencies are injected through the `scope` prop instead.
 
 **Code persistence:** `ReactCanvas` and `EditTextReactCanvas` accept `persistKey?: string` (saves/restores code in `localStorage`) and `onCodeChange?: (code: string) => void` (notifies on change so the host can persist however it likes). For `EditTextReactCanvas` these operate on the **final saved JSX**, not the intermediate EditableText form. Shared, SSR-safe storage helpers live in `src/coreComponents/core/storage.ts`.
@@ -32,11 +50,13 @@ Top-level layout (build artifacts and `node_modules` omitted):
 
 ```
 .
-├── src/                  # library source — the published code (see Architecture)
+├── src/                  # library source — the published code (see Scope resolution)
 ├── dist/                 # build output: CJS + ESM bundles + .d.ts  (gitignored)
 ├── doc_site/             # Docusaurus documentation site (own package + bun.lock)
 ├── scripts/
-│   └── manual/           # manual, run-by-hand scripts (e.g. transformer walkthrough)
+│   ├── generate-scope-maps.mjs  # emits src/scopes/generated/ from node_modules
+│   └── manual/           # manual, run-by-hand scripts (transformer, analyzer, site builder)
+├── skills/               # react-code-canvas agent skill, shipped in the package
 ├── public/               # static assets (e.g. rrc.png used by the README)
 ├── storybook-static/     # built static Storybook  (gitignored)
 ├── coverage/             # jest coverage output  (gitignored)
@@ -44,7 +64,7 @@ Top-level layout (build artifacts and `node_modules` omitted):
 ├── .github/              # workflows (test, deploy-docs), issue/PR templates
 ├── rollup.config.mjs     # library bundler config
 ├── babel.config.js       # babel presets used by jest (babel-jest)
-├── jest.config.js        # currently empty → jest defaults
+├── jest.config.js        # transformIgnorePatterns: lucide-react is ESM-only, must go through babel
 ├── tsconfig.json         # TS config; emits declarations to dist/
 ├── package.json          # name, version, exports/types, scripts, deps
 ├── bun.lock              # the committed lockfile (never commit package-lock.json)
@@ -55,6 +75,26 @@ Top-level layout (build artifacts and `node_modules` omitted):
 └── bundle-analysis.html  # rollup-plugin-visualizer output  (gitignored via *.html)
 ```
 
+## Scope resolution
+
+`src/scopes/lazyScope.ts` is the **only** scope path. It regex-scans the code for
+identifiers and loads just what is referenced: lucide icons one file at a time,
+recharts / motion / `react-icons/fa` whole (they are not per-component
+splittable). `resolveScope` is async; `useResolvedScope` returns `readyCode` so
+code is never evaluated against a scope that has not finished loading.
+
+The name → loader tables in `src/scopes/generated/` are produced from the
+installed dependencies by `bun run generate:scopes`, which runs automatically as
+part of `bun run build`. **Never hand-edit `src/scopes/generated/`.** Import
+specifiers must be string literals or Vite/Rollup cannot split them — that is
+why the tables are generated rather than computed.
+
+The old eager scope (`src/scopes/Scope.ts` and the per-package
+`lucidreactScope` / `rechartScope` / `motionScope` modules) was removed in
+5.0.0. It spread every export of every package into one object at module load,
+forcing ~300 KB (brotli) into the first chunk and handing ~5800 parameters to
+`new Function` on every evaluation. Do not reintroduce it.
+
 ## Commands
 
 Bun is the package manager; the committed lockfile is `bun.lock` (never commit `package-lock.json`).
@@ -62,7 +102,10 @@ Bun is the package manager; the committed lockfile is `bun.lock` (never commit `
 ```bash
 bun install --frozen-lockfile
 bun run test            # jest
-bun run build           # rollup -c  -> dist/
+bun run build           # rollup -c  -> dist/  (browser entry + dist/builder.mjs)
+bun run test:manual:site # end-to-end site build; needs `bun run build` first
+bun run test:manual:site ./Page.jsx [outDir]   # build one canvas-format file instead
+bun run demo:site        # the same, on scripts/manual/fixtures/demo-page.jsx
 bun run dev             # storybook dev on :6006
 bun run build-storybook # static Storybook -> storybook-static/
 bun run size            # size-limit check

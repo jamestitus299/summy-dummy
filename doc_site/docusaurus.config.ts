@@ -10,6 +10,10 @@ import type {
 // `react-code-canvas/package.json`. The package's `exports` map only exposes
 // ".", so a subpath import of package.json fails with ERR_PACKAGE_PATH_NOT_EXPORTED
 // on versions that ship that field. fs bypasses exports resolution entirely.
+//
+// The exports map now carries "./package.json", but this stays until the docs
+// depend on a published version that has it -- the pin above is 5.0.0, which
+// does not, and switching early would silently degrade to 'unknown'.
 function readCanvasVersion(): string {
   try {
     const pkgPath = path.join(

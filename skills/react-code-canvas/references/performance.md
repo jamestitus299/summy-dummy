@@ -4,14 +4,21 @@ How the canvas loads things, and what that means for the code you write. Each ru
 names the internal mechanism so the reasoning survives library upgrades — if the
 mechanism changes, the rule may too.
 
+> **Scope: the canvas, which has no bundler.** If the code is being built into a
+> static site with `buildStandaloneSite`, rules 1 and 2 do not apply — esbuild
+> tree-shakes, so one `Fa*` icon costs ~1 KB instead of the whole pack, and a
+> library name in a comment costs nothing because imports come from an AST rather
+> than a regex. See "Standalone builds: different economics" in SKILL.md for the
+> measured figures and the first-contentful-paint rules that replace these.
+
 ## How loading works (the 30-second model)
 
 Before evaluating your code, the canvas scans the **entire source string** with an
 identifier regex and loads what it finds:
 
 - a lucide icon name → one dynamic import, ~0.8 KB gz for that icon's file
-- any recharts name → the whole recharts library (~145 KB gz) in one import
-- any motion name → the whole motion library (~61 KB gz) in one import
+- any recharts name → the whole recharts library (~158 KB gz) in one import
+- any motion name → the whole motion library (~64 KB gz) in one import
 - any `Fa*` (Font Awesome) name → the whole `react-icons/fa` pack (~420 KB gz,
   1.3 MB raw) in one import — there are no per-icon files to split
 
@@ -47,7 +54,7 @@ pack is a single fetch. Mixing sets on one page pays both loaders; pick one.
 ## Rule 2 — library names in comments and strings still cost
 
 ```jsx
-// ❌ this comment costs ~145 KB gz — "LineChart" matches the recharts name list
+// ❌ this comment costs ~158 KB gz — "LineChart" matches the recharts name list
 // TODO: maybe swap this table for a LineChart later
 export default function StatsTable() { ... }
 

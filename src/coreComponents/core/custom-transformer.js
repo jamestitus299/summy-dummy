@@ -336,7 +336,7 @@ export function transformEditableTextToJSX(code) {
     return { transformedCode: transformedCode, error: null };
   }
   catch (error) {
-    return { transformedCode: null, error: "error" };
+    return { transformedCode: null, error };
   }
 }
 

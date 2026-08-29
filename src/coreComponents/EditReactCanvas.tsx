@@ -104,7 +104,7 @@ export default function EditReactCanvas({
         // if error - onError callback if exist, return
         if (error) {
             if (onError) {
-                onError(error);
+                onError(error instanceof Error ? error.message : String(error));
             }
             return
         }
@@ -157,7 +157,7 @@ export default function EditReactCanvas({
         var { transformedCode, error } = transformEditableTextToJSX(transformedCode);
         if (error) {
             if (onError) {
-                onError(error);
+                onError(error instanceof Error ? error.message : String(error));
             }
             return
         }

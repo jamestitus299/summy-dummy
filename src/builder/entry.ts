@@ -52,6 +52,10 @@ export function importLines(referencedGlobals: string[]): string {
     // whether or not the source ever spells `React`.
     if (name === "React") continue;
 
+    // Not a real export of any package -- callers are expected to strip
+    // <EditableText> back to plain JSX before reaching here.
+    if (name === "EditableText") continue;
+
     if (name in baseScope) {
       add(
         name === "Helmet" || name === "HelmetProvider"

@@ -239,12 +239,11 @@ export async function buildStandaloneSite(
   const source = await stripEditableText(code);
   const entry = await entryFor(source);
 
-  const [js, css] = await Promise.all([
+  const [js, css, markup] = await Promise.all([
     bundleEntry(entry, options),
     compileCss(source, options),
+    prerender ? prerenderMarkup(source) : Promise.resolve(""),
   ]);
-
-  const markup = prerender ? await prerenderMarkup(source) : "";
   const { head: hoisted, body } = splitHoisted(markup);
 
   const files: Record<string, string> = {};
